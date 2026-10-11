@@ -70,7 +70,7 @@ export default function ContactLinks() {
                 aria-hidden="true"
                 className="text-base text-vermelho transition-transform duration-500 ease-[var(--ease-cine)] group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
               >
-                {l.download ? "↓" : "↗"}
+                {l.download ? "↓\uFE0E" : "↗\uFE0E"}
               </span>
             </span>
           </a>

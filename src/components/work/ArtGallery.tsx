@@ -151,7 +151,7 @@ function Viewer({
           {pad(index + 1)} / {pad(items.length)}
         </span>
         <button ref={closeButton} type="button" onClick={onClose} className={pill}>
-          {t.work.viewer.close} ✕
+          {t.work.viewer.close} {"✕\uFE0E"}
         </button>
       </div>
 
@@ -183,10 +183,10 @@ function Viewer({
       <div className="sticky bottom-0 flex items-end justify-end gap-6">
         <div className="flex gap-2">
           <button type="button" onClick={() => go(-1)} aria-label={t.work.viewer.prev} className={pill}>
-            ←
+            {"←\uFE0E"}
           </button>
           <button type="button" onClick={() => go(1)} aria-label={t.work.viewer.next} className={pill}>
-            →
+            {"→\uFE0E"}
           </button>
         </div>
       </div>

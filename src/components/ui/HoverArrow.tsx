@@ -8,7 +8,7 @@ export default function HoverArrow() {
       aria-hidden="true"
       className="inline-block transition-transform duration-500 ease-[var(--ease-cine)] group-hover/arrow:-rotate-45 group-focus-visible/arrow:-rotate-45"
     >
-      →
+      {"→\uFE0E"}
     </span>
   );
 }

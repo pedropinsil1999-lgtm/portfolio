@@ -127,7 +127,7 @@ export default function CvDownload() {
                 aria-hidden="true"
                 className="inline-block transition-transform duration-300 group-hover:translate-y-0.5"
               >
-                ↓
+                {"↓\uFE0E"}
               </span>
             </a>
             <span className="label text-[0.95rem] text-branco/40">

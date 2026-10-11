@@ -79,14 +79,14 @@ const pt: Dictionary = {
   hero: {
     kicker: "Designer de Comunicação | Resende, RJ",
     tagline: "Direção visual, audiovisual e sites que levam à próxima ação.",
-    scroll: "Rolar ↓",
+    scroll: "Rolar ↓\uFE0E",
   },
   cv: {
     label: "Currículo",
     title: "Meu currículo, no seu idioma.",
     group: "Idioma do currículo",
     meta: "PDF · 1 página",
-    cursor: "Baixar ↓",
+    cursor: "Baixar ↓\uFE0E",
     versions: {
       pt: { label: "Português", cta: "Baixar em português" },
       en: { label: "English", cta: "Baixar em inglês" },
@@ -133,7 +133,7 @@ const pt: Dictionary = {
     title: "Tem uma vaga ou um projeto?",
     button: "Vamos conversar",
   },
-  footer: { backToTop: "Voltar ao topo ↑" },
+  footer: { backToTop: "Voltar ao topo ↑\uFE0E" },
   work: {
     artsLabel: "Direção visual",
     artsTitle: "Peças com uma ideia no centro.",
@@ -143,7 +143,7 @@ const pt: Dictionary = {
     sitesLabel: "Sites de conversão",
     sitesTitle: "Páginas com um caminho só.",
     view: "Ver",
-    openSite: "Abrir site ↗",
+    openSite: "Abrir site ↗\uFE0E",
     shuffle: "Embaralhar",
     shuffleHint: "Clique na pilha para embaralhar",
     viewer: { close: "Fechar", prev: "Anterior", next: "Próxima" },
@@ -210,14 +210,14 @@ const en: Dictionary = {
   hero: {
     kicker: "Communication Designer | Resende, Brazil",
     tagline: "Visual direction, film and websites that lead to the next step.",
-    scroll: "Scroll ↓",
+    scroll: "Scroll ↓\uFE0E",
   },
   cv: {
     label: "Résumé",
     title: "My résumé, in your language.",
     group: "Résumé language",
     meta: "PDF · 1 page",
-    cursor: "Download ↓",
+    cursor: "Download ↓\uFE0E",
     versions: {
       pt: { label: "Português", cta: "Download in Portuguese" },
       en: { label: "English", cta: "Download in English" },
@@ -264,7 +264,7 @@ const en: Dictionary = {
     title: "Got a role or a project?",
     button: "Let's talk",
   },
-  footer: { backToTop: "Back to top ↑" },
+  footer: { backToTop: "Back to top ↑\uFE0E" },
   work: {
     artsLabel: "Visual direction",
     artsTitle: "Pieces built around one idea.",
@@ -274,7 +274,7 @@ const en: Dictionary = {
     sitesLabel: "Conversion websites",
     sitesTitle: "Pages with a single path.",
     view: "View",
-    openSite: "Open site ↗",
+    openSite: "Open site ↗\uFE0E",
     shuffle: "Shuffle",
     shuffleHint: "Click the pile to shuffle",
     viewer: { close: "Close", prev: "Previous", next: "Next" },
