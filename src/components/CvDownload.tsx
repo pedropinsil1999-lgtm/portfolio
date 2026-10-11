@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import CardBackdrop from "@/components/ui/CardBackdrop";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale as Lang } from "@/i18n/config";
 
@@ -79,7 +80,8 @@ export default function CvDownload() {
 
   return (
     <section className="px-6 pt-16 md:px-12 md:pt-24">
-      <div className="grid items-center gap-14 rounded-[2rem] border border-branco/12 p-6 md:grid-cols-[1fr_auto] md:gap-20 md:p-14">
+      <div className="relative isolate grid items-center gap-14 overflow-hidden rounded-[2rem] border border-branco/12 p-6 md:grid-cols-[1fr_auto] md:gap-20 md:p-14">
+        <CardBackdrop seed={7} />
         <div>
           <p className="label text-[0.95rem] text-branco/50">{t.cv.label}</p>
           <h2 className="mt-6 max-w-[16ch] font-display text-[clamp(1.9rem,4.2vw,3.6rem)] leading-[1.02] text-branco">

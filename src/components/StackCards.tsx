@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import CardPreview, { type Preview } from "@/components/CardPreview";
 import HoverArrow from "@/components/ui/HoverArrow";
-import { MeshGradient } from "@/components/ui/mesh-gradient";
-import { GRAIN } from "@/lib/grain";
+import CardBackdrop from "@/components/ui/CardBackdrop";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
 import { scriptGlow, scriptHidden, scriptRevealStyle, scriptShown } from "@/lib/scriptReveal";
@@ -19,15 +18,6 @@ export type StackCard = {
   /** Optional preview of the related work and a link to it. */
   preview?: Preview;
   link?: { href: string; label: string };
-};
-
-// Card background: a dark mesh gradient ("Noite") that twists around the cursor.
-const MESH = {
-  colors: ["#021a29", "#042a41", "#004671", "#365c73"],
-  intensity: 0.45,
-  softness: 0.35,
-  vignette: 0.35,
-  cursor: true,
 };
 
 const DIM = "#7298af"; // the title's first word once the script word is written
@@ -98,13 +88,7 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
             className={`group/card relative isolate flex h-full origin-top flex-col overflow-hidden will-change-[transform,filter] rounded-[1.75rem] p-5 md:rounded-[2rem] md:p-12 ${tones[card.tone]}`}
           >
             {card.tone === "grafite" && (
-              <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-                <MeshGradient {...MESH} seed={i + 1} active={!covered[i]} />
-                <div
-                  className="absolute inset-0 opacity-[0.07]"
-                  style={{ backgroundImage: `url("${GRAIN}")`, backgroundSize: "160px 160px" }}
-                />
-              </div>
+              <CardBackdrop seed={i + 1} active={!covered[i]} />
             )}
             {/* Phones: index over a left-aligned line; desktop: side by side. */}
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-6">
