@@ -5,6 +5,10 @@ import CtaSection from "@/components/CtaSection";
 import ArtGallery from "@/components/work/ArtGallery";
 import ProofStack from "@/components/work/ProofStack";
 import Halftone from "@/components/backgrounds/Halftone";
+import AmbientLight from "@/components/backgrounds/AmbientLight";
+import FilmGrain from "@/components/backgrounds/FilmGrain";
+import SectionBackdrop from "@/components/backgrounds/SectionBackdrop";
+import Noite from "@/components/backgrounds/Noite";
 import SiteShowcase from "@/components/work/SiteShowcase";
 import VideoShowcase from "@/components/work/VideoShowcase";
 import { arts, sites, videos } from "@/content/work";
@@ -40,17 +44,28 @@ export default async function Trabalhos({ params }: PageProps<"/[lang]/trabalhos
         <ProofStack items={arts} />
       </PageHero>
 
-      <section id="direcao-visual" data-theme="preto" className="scroll-mt-24 px-6 pb-40 pt-32 md:px-12 md:pb-56 md:pt-44">
+      {/* Each section gets a quiet background of its own; SectionBackdrop fades
+          it out at the edges so they hand over cleanly. */}
+      <section id="direcao-visual" data-theme="preto" className="relative isolate scroll-mt-24 px-6 pb-40 pt-32 md:px-12 md:pb-56 md:pt-44">
+        <SectionBackdrop>
+          <AmbientLight anchor={{ x: 0.78, y: 0.12 }} pull={0.8} size="90vmax" />
+        </SectionBackdrop>
         <SectionHead label={t.work.artsLabel} title={t.work.artsTitle} />
         <ArtGallery items={arts} />
       </section>
 
-      <section id="audiovisual" data-theme="preto" className="scroll-mt-24 px-6 pb-40 pt-32 md:px-12 md:pb-56 md:pt-44">
+      <section id="audiovisual" data-theme="preto" className="relative isolate scroll-mt-24 px-6 pb-40 pt-32 md:px-12 md:pb-56 md:pt-44">
+        <SectionBackdrop>
+          <FilmGrain />
+        </SectionBackdrop>
         <SectionHead label={t.work.videosLabel} title={t.work.videosTitle} />
         <VideoShowcase items={videos} />
       </section>
 
-      <section id="sites" data-theme="preto" className="scroll-mt-24 px-6 pb-32 pt-32 md:px-12 md:pb-44 md:pt-40">
+      <section id="sites" data-theme="preto" className="relative isolate scroll-mt-24 px-6 pb-32 pt-32 md:px-12 md:pb-44 md:pt-40">
+        <SectionBackdrop className="opacity-75">
+          <Noite seed={5} />
+        </SectionBackdrop>
         <SectionHead label={t.work.sitesLabel} title={t.work.sitesTitle} />
         <SiteShowcase items={sites} />
       </section>

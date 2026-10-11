@@ -152,6 +152,24 @@ html[data-intro="resume"] {
   .mega-waves path { animation: none; opacity: 0.6; }
 }
 
+/* Film grain (Trabalhos, audiovisual): the noise layer hops between offsets
+   a few times a second, like grain changing frame to frame. */
+.film-grain {
+  animation: film-grain 0.9s steps(6) infinite;
+}
+@keyframes film-grain {
+  0% { transform: translate(0, 0); }
+  17% { transform: translate(-7%, 4%); }
+  33% { transform: translate(5%, -6%); }
+  50% { transform: translate(-3%, 8%); }
+  67% { transform: translate(8%, 2%); }
+  83% { transform: translate(-6%, -5%); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .film-grain { animation: none; }
+}
+
 /* "Now" marker on the about timeline. */
 .now-pulse {
   box-shadow: 0 0 0 0 rgb(114 152 175 / 0.6);

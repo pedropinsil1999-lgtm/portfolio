@@ -5,17 +5,24 @@ import { gsap } from "@/lib/gsap";
 import { GRAIN } from "@/lib/grain";
 import { prefersReducedMotion, whenIntroDone } from "@/lib/motion";
 
-// Resting spot of the light (fraction of the frame), top-left corner.
-const REST = { x: 0.18, y: 0.2 };
-// How far towards the cursor the light leans (1 = all the way).
-const LEAN = 0.55;
 
 /**
  * About page background: a very soft light-blue glow resting in a corner. It
  * breathes slowly and drifts, unhurried, towards the cursor, like ambient
  * light in a room. No shapes, only atmosphere.
  */
-export default function AmbientLight() {
+export default function AmbientLight({
+  anchor = { x: 0.18, y: 0.2 },
+  pull = 0.55,
+  size = "110vmax",
+}: {
+  /** Resting spot of the light (fraction of the frame); top-left by default. */
+  anchor?: { x: number; y: number };
+  /** How far towards the cursor the light leans (1 = all the way). */
+  pull?: number;
+  /** Diameter of the glow. */
+  size?: string;
+} = {}) {
   const root = useRef<HTMLDivElement>(null);
   const glow = useRef<HTMLDivElement>(null);
 
@@ -30,12 +37,12 @@ export default function AmbientLight() {
     // Centre the disc on the anchor; GSAP owns its transform (scale too).
     gsap.set(el.firstElementChild, { xPercent: -50, yPercent: -50 });
     const place = (x: number, y: number) => gsap.set(el, { x, y });
-    place(W * REST.x, H * REST.y);
+    place(W * anchor.x, H * anchor.y);
 
     const ro = new ResizeObserver(() => {
       W = box.clientWidth;
       H = box.clientHeight;
-      if (reduced) place(W * REST.x, H * REST.y);
+      if (reduced) place(W * anchor.x, H * anchor.y);
     });
     ro.observe(box);
 
@@ -66,10 +73,10 @@ export default function AmbientLight() {
     const xTo = gsap.quickTo(el, "x", { duration: 2.6, ease: "power2.out" });
     const yTo = gsap.quickTo(el, "y", { duration: 2.6, ease: "power2.out" });
     const lean = (x: number, y: number) => {
-      xTo(W * REST.x + (x - W * REST.x) * LEAN);
-      yTo(H * REST.y + (y - H * REST.y) * LEAN);
+      xTo(W * anchor.x + (x - W * anchor.x) * pull);
+      yTo(H * anchor.y + (y - H * anchor.y) * pull);
     };
-    const rest = () => lean(W * REST.x, H * REST.y);
+    const rest = () => lean(W * anchor.x, H * anchor.y);
 
     // Keep the last viewport position so scrolling with a still mouse keeps
     // the light leaning towards it.
@@ -120,16 +127,18 @@ export default function AmbientLight() {
       window.removeEventListener("scroll", follow);
       document.documentElement.removeEventListener("pointerleave", onLeave);
     };
-  }, []);
+  }, [anchor.x, anchor.y, pull]);
 
   return (
     <div ref={root} className="absolute inset-0">
       {/* Anchored at its centre; GSAP moves it with x/y. */}
       <div ref={glow} className="absolute left-0 top-0 h-0 w-0">
         <div
-          className="absolute h-[110vmax] w-[110vmax] rounded-full will-change-transform"
+          className="absolute rounded-full will-change-transform"
           // Many eased stops so the falloff has no visible rings.
           style={{
+            width: size,
+            height: size,
             background:
               "radial-gradient(circle, rgb(194 232 255 / 0.17) 0%, rgb(194 232 255 / 0.14) 10%, rgb(194 232 255 / 0.1) 20%, rgb(194 232 255 / 0.066) 30%, rgb(194 232 255 / 0.038) 40%, rgb(194 232 255 / 0.018) 50%, rgb(194 232 255 / 0.006) 60%, transparent 70%)",
           }}
