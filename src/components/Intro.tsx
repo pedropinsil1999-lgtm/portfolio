@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 // Room around each word. The top word's descender (the g in Português) hangs
 // towards the line, so it gets extra space below to sit as far from the line
 // as the bottom word's capitals do.
+const INK = "#010d14"; // the dark frame around the opening window
+
 const pad = { top: "pb-[0.5em] pt-[0.16em]", bottom: "pb-[0.26em] pt-[0.16em]" } as const;
 
 const options: { lang: Locale; half: "top" | "bottom"; word: string; caption: string; enter: string; htmlLang: string }[] = [
@@ -26,9 +28,11 @@ const options: { lang: Locale; half: "top" | "bottom"; word: string; caption: st
  * On every full page load (open or refresh), the two halves of that frame become
  * the language choice: "Português" rises above the line, "English" drops below
  * it. Hovering fills a word outward from the line and nudges the line toward
- * the other half; picking one opens the curtain, carrying the word with it.
+ * the other half. Picking one clears the screen, and an aperture opens on the
+ * page: a small pill window in the middle of the dark frame that then grows
+ * to fill the screen, its rounded corners squaring off as it lands.
  * If the pick differs from the current URL, the page reloads into that
- * language behind the closed curtain and reopens ("resume").
+ * language behind the dark frame and the aperture opens there ("resume").
  */
 export default function Intro() {
   const root = useRef<HTMLDivElement>(null);
@@ -50,15 +54,44 @@ export default function Intro() {
     requestAnimationFrame(() => ScrollTrigger.refresh());
   };
 
-  /** Appends the curtain opening to a timeline. */
-  const addOpen = (tl: gsap.core.Timeline, at: string | number = ">") =>
-    tl
-      .addLabel("open", at)
-      .to(q("[data-intro-top]"), { yPercent: -100, duration: 0.85, ease: "expo.inOut" }, "open")
-      .to(q("[data-intro-bottom]"), { yPercent: 100, duration: 0.85, ease: "expo.inOut" }, "open")
-      .to(q("[data-intro-line]"), { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, "open")
-      .call(releaseIntro, [], "open+=0.35")
+  /**
+   * Appends the aperture opening to a timeline: whatever is still on screen
+   * clears, the dark frame swaps to an "ink" layer around a zero-size window,
+   * the window opens to a small pill, then grows to the full screen.
+   */
+  const addOpen = (tl: gsap.core.Timeline, at: string | number = ">") => {
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const clamp = gsap.utils.clamp;
+    const pillW = clamp(6 * rem, 8 * rem, window.innerWidth * 0.08);
+    const pillH = clamp(3.25 * rem, 4 * rem, window.innerWidth * 0.041);
+    const corner = clamp(1.75 * rem, 3.5 * rem, window.innerWidth * 0.04);
+    const aperture = q("[data-intro-aperture]");
+    return tl
+      .addLabel("clear", at)
+      .to(q("[data-lang-word], [data-intro-label], [data-lang-caption]"), {
+        autoAlpha: 0,
+        filter: "blur(12px)",
+        duration: 0.4,
+        ease: "power2.in",
+      }, "clear")
+      .to(q("[data-intro-line]"), { autoAlpha: 0, duration: 0.3, ease: "power2.in" }, "clear")
+      // The frame deepens to near-black "ink" so the window onto the page reads.
+      .to(q("[data-intro-top], [data-intro-bottom]"), { backgroundColor: INK, duration: 0.4, ease: "power1.inOut" }, "clear")
+      .addLabel("open", "clear+=0.4")
+      // Same colour, so swapping the frame for the ink layer is invisible.
+      .set(q("[data-intro-top], [data-intro-bottom]"), { autoAlpha: 0 }, "open")
+      .set(aperture, { autoAlpha: 1, borderRadius: pillH / 2 }, "open")
+      .to(aperture, { width: pillW, height: pillH, duration: 0.4, delay: 0.1, ease: "power4.out" }, "open")
+      .addLabel("grow", "open+=0.55")
+      // Measured in px (GSAP can't tween px into vw); a hair larger than the
+      // screen so no sliver of the frame is left at the edges.
+      .to(aperture, { width: () => window.innerWidth + 2, height: () => window.innerHeight + 2, duration: 1.25, ease: "power4.inOut" }, "grow")
+      .to(aperture, { borderRadius: corner, duration: 0.85, ease: "power2.in" }, "grow")
+      .to(aperture, { borderRadius: 0, duration: 0.4, ease: "power2.out" }, "grow+=0.85")
+      // The hero starts its own entrance while the window is still growing.
+      .call(releaseIntro, [], "grow+=0.75")
       .eventCallback("onComplete", finish);
+  };
 
   useGSAP(
     () => {
@@ -67,8 +100,7 @@ export default function Intro() {
       if (mode !== "play" && mode !== "resume") return;
 
       if (mode === "resume") {
-        gsap.set(q("[data-intro-line-bar]"), { scaleX: 1 });
-        timeline.current = addOpen(gsap.timeline({ delay: 0.25 }));
+        timeline.current = addOpen(gsap.timeline({ delay: 0.15 }));
         return;
       }
 
@@ -118,7 +150,7 @@ export default function Intro() {
       .to(q("[data-lang-caption]"), { autoAlpha: 0, duration: 0.3 }, 0);
 
     if (choice === lang) {
-      // Same language as the page: just open, the word rides out with its half.
+      // Same language as the page: the chosen word lingers, then the aperture opens.
       addOpen(tl, "+=0.35");
     } else {
       // Other language: tuck the word back into the line, then reload into
@@ -223,6 +255,15 @@ export default function Intro() {
           </div>
         </div>
       ))}
+
+      {/* The aperture: a window with no size, its huge shadow is the dark frame
+          ("ink") around it. GSAP grows it into a pill, then to the full screen. */}
+      <div
+        data-intro-aperture
+        aria-hidden="true"
+        style={{ opacity: 0, visibility: "hidden" }}
+        className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_0_150vmax_#010d14] will-change-[width,height,border-radius]"
+      />
 
       {/* The horizon line: outer element leans on hover, inner bar is drawn by GSAP. */}
       <div

@@ -222,11 +222,20 @@ html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
   z-index: 40;
 }
 
-/* Page transition, a camera move: the old page dissolves while the new one
-   comes towards the camera, settling from slightly too close to its normal
-   size. It scales around the centre of
-   the screen; --vt-scroll keeps the old snapshot where the visitor was.
-   Only transform and opacity animate, so it stays smooth on phones. */
+/* Page transition: the page you leave lifts away and sinks into the dark
+   (it rises a third of the screen, dims and blurs), while the next page comes
+   up from below as a slightly smaller card with rounded corners, grows to full
+   size, and squares its corners as it lands. --vt-scroll keeps the old
+   snapshot where the visitor was. */
+:root {
+  --vt-radius: 48px;
+  --vt-ease: cubic-bezier(0.86, 0, 0.07, 1);
+}
+@media (pointer: coarse) {
+  :root {
+    --vt-radius: 32px;
+  }
+}
 .site-header {
   view-transition-name: site-header;
   transition: opacity 0.4s var(--ease-cine);
@@ -243,33 +252,47 @@ html.viewer-open .site-header {
   animation: none;
 }
 ::view-transition-old(.page-swap) {
-  transform-origin: 50% calc(var(--vt-scroll, 0px) + 50vh);
-  animation: page-out 0.4s ease-out both;
+  animation:
+    page-out 1.2s var(--vt-ease) both,
+    page-out-dim 1.2s cubic-bezier(0.33, 1, 0.68, 1) both;
 }
 ::view-transition-new(.page-swap) {
   transform-origin: 50% 50vh;
-  animation: page-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
+  animation:
+    page-in 1.2s var(--vt-ease) both,
+    page-in-corners 0.4s ease-out 0.8s both;
 }
-/* The outgoing page doesn't move at all: it just dissolves quickly, so no
-   part of it is ever seen travelling. The camera move is all in the new page. */
 @keyframes page-out {
   from {
     transform: translateY(calc(-1 * var(--vt-scroll, 0px)));
-    opacity: 1;
   }
   to {
-    transform: translateY(calc(-1 * var(--vt-scroll, 0px)));
-    opacity: 0;
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px) - 35vh));
+  }
+}
+@keyframes page-out-dim {
+  from {
+    filter: brightness(1) blur(0);
+  }
+  to {
+    filter: brightness(0.5) blur(16px);
   }
 }
 @keyframes page-in {
   from {
-    transform: scale(1.14);
-    opacity: 0;
+    transform: translateY(100vh) scale(0.85);
   }
   to {
-    transform: scale(1);
-    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* The card's bottom edge is clipped to the screen so its lower corners show. */
+@keyframes page-in-corners {
+  from {
+    clip-path: inset(0 0 max(0px, calc(100% - 100vh)) 0 round var(--vt-radius));
+  }
+  to {
+    clip-path: inset(0 0 max(0px, calc(100% - 100vh)) 0 round 0);
   }
 }
 

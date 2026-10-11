@@ -13,23 +13,43 @@ import { useI18n } from "@/i18n/I18nProvider";
 
 const DIM = "#7298af"; // "Pedro" once "Henrique" is written
 
+// Alpha threshold of the gooey filter: steep (blobs merge into one liquid
+// shape), looser, then off (plain type).
+const GOO_THICK = "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -20";
+const GOO_LOOSE = "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8";
+const GOO_NONE = "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0";
+
 export default function HomeHero() {
   const root = useRef<HTMLDivElement>(null);
   const { t } = useI18n();
   useHeroReveal(root);
 
-  // Same treatment as the card titles: "Pedro" rises, then "Henrique" is
-  // written in script over its base and "Pedro" dims, so the script stays lit.
+  // Name entrance. "Pedro" condenses out of liquid: a gooey SVG filter (blur,
+  // then an alpha threshold) melts the letters together and lets them set into
+  // crisp type. Then "Henrique" is written in script over its base and
+  // "Pedro" dims, so the script stays lit (same as the card titles).
   useGSAP(
     (_, contextSafe) => {
       if (prefersReducedMotion()) {
         gsap.set("[data-name-top]", { color: DIM });
         return;
       }
+      const blur = document.querySelector("#hero-goo feGaussianBlur");
+      const matrix = document.querySelector("#hero-goo feColorMatrix");
+      gsap.set("[data-name-top]", { autoAlpha: 0 });
       gsap.set("[data-name-script]", scriptHidden);
       const play = contextSafe!(() =>
         gsap
-          .timeline({ delay: 0.75 })
+          .timeline({ delay: 0.1 })
+          .set("[data-name-top]", { filter: "url(#hero-goo)" }, 0)
+          .set(blur ?? {}, { attr: { stdDeviation: 50 } }, 0)
+          .set(matrix ?? {}, { attr: { values: GOO_THICK } }, 0)
+          .to("[data-name-top]", { autoAlpha: 1, duration: 0.07, ease: "power1.out" }, 0.08)
+          .to(blur ?? {}, { attr: { stdDeviation: 0 }, duration: 0.5, ease: "power2.out" }, 0.1)
+          .to(matrix ?? {}, { attr: { values: GOO_LOOSE }, duration: 0.07, ease: "power1.out" }, 0.08)
+          .to(matrix ?? {}, { attr: { values: GOO_NONE }, duration: 0.45, ease: "power1.inOut" }, 0.15)
+          // Set: drop the filter so the title costs nothing afterwards.
+          .set("[data-name-top]", { clearProps: "filter" }, 0.62)
           .to("[data-name-script]", {
             ...scriptShown,
             duration: 1.6,
@@ -37,8 +57,8 @@ export default function HomeHero() {
             onComplete() {
               scriptSettle(this.targets()[0] as Element, true);
             },
-          })
-          .to("[data-name-top]", { color: DIM, duration: 1.2, ease: "power1.inOut" }, 0.5),
+          }, 0.85)
+          .to("[data-name-top]", { color: DIM, duration: 1.2, ease: "power1.inOut" }, 1.35),
       );
       return whenIntroDone(play);
     },
@@ -54,8 +74,9 @@ export default function HomeHero() {
   useGSAP(
     (_, contextSafe) => {
       if (prefersReducedMotion()) return;
-      gsap.set("[data-hero-bg]", { autoAlpha: 0 });
-      const show = contextSafe!(() => gsap.to("[data-hero-bg]", { autoAlpha: 1, duration: 1.6, ease: "power2.out" }));
+      // No fade-in: the background is already live behind the intro, so the
+      // intro's opening window shows the lit page through it.
+      void contextSafe;
       gsap.fromTo(
         "[data-hero-bg-inner]",
         { opacity: 1, scale: 1, yPercent: 0 },
@@ -74,13 +95,19 @@ export default function HomeHero() {
           },
         },
       );
-      return whenIntroDone(show);
     },
     { scope: stage },
   );
 
   return (
     <div ref={stage} className="relative overflow-x-clip">
+      {/* Gooey filter for the name's liquid entrance (see the timeline above). */}
+      <svg aria-hidden="true" width="0" height="0" className="absolute">
+        <filter id="hero-goo" x="-50%" y="-50%" width="200%" height="200%" colorInterpolationFilters="sRGB">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="0" />
+          <feColorMatrix type="matrix" values={GOO_NONE} />
+        </filter>
+      </svg>
       <div
         data-hero-bg
         aria-hidden
@@ -114,8 +141,8 @@ export default function HomeHero() {
         </div>
 
         <h1 className="mt-6 font-display text-[clamp(3.5rem,19vw,15rem)] leading-[0.88] text-branco md:text-[clamp(3.5rem,15vw,15rem)]">
-          <span className="block overflow-hidden pb-[0.08em]">
-            <span data-reveal data-name-top className="block">
+          <span className="block pb-[0.08em]">
+            <span data-name-top className="block">
               Pedro
             </span>
           </span>
