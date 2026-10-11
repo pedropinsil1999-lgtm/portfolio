@@ -229,6 +229,12 @@ html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
    Only transform and opacity animate, so it stays smooth on phones. */
 .site-header {
   view-transition-name: site-header;
+  transition: opacity 0.4s var(--ease-cine);
+}
+/* While a piece is open in the viewer, the header steps aside. */
+html.viewer-open .site-header {
+  opacity: 0;
+  pointer-events: none;
 }
 ::view-transition-group(site-header) {
   z-index: 10;

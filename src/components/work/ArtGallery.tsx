@@ -118,10 +118,14 @@ function Viewer({
     const smooth = lenis?.current;
     smooth?.stop();
     document.documentElement.style.overflow = "hidden";
+    // Also hides the site header (see globals.css), so nothing can cover the
+    // viewer's own controls whatever layer the header ends up on.
+    document.documentElement.classList.add("viewer-open");
     closeButton.current?.focus({ preventScroll: true });
     return () => {
       smooth?.start();
       document.documentElement.style.overflow = "";
+      document.documentElement.classList.remove("viewer-open");
     };
   }, [lenis]);
 
@@ -145,7 +149,7 @@ function Viewer({
       aria-label={art.title}
       // Scrolls as a column on phones (piece, then its text); fixed frame on desktop.
       data-lenis-prevent
-      className="viewer fixed inset-0 z-[90] flex flex-col overflow-y-auto bg-preto/92 px-4 py-4 backdrop-blur-xl md:px-12 md:py-6 lg:overflow-hidden"
+      className="viewer fixed inset-0 z-[150] flex flex-col overflow-y-auto bg-preto/92 px-4 py-4 backdrop-blur-xl md:px-12 md:py-6 lg:overflow-hidden"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="flex items-center justify-between">
