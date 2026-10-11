@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
 import { useLenis } from "@/components/SmoothScroll";
@@ -84,9 +85,10 @@ export default function ArtGallery({ items }: { items: Art[] }) {
         ))}
       </div>
 
-      {open !== null && (
-        <Viewer items={items} index={open} onIndex={setOpen} onClose={close} />
-      )}
+      {/* Portalled to <body>: inside the page it would be trapped in the page
+          layer and the fixed header would sit on top of it. */}
+      {open !== null &&
+        createPortal(<Viewer items={items} index={open} onIndex={setOpen} onClose={close} />, document.body)}
     </>
   );
 }
