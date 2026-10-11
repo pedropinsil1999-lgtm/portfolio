@@ -1,0 +1,250 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette (test): deep navy base, ice-white type, steel blue as the signal
+     for details. Token names kept from the previous black/white/red palette
+     (#000000 / #141414 / #ffffff / #ed3237) so swapping back is one edit. */
+  --preto: #042a41;
+  --grafite: #004671; /* surfaces (cards, frames) so they lift off the base */
+  --branco: #eaffff;
+  --vermelho: #7298af;
+  --azul-claro: #c2e8ff; /* hairlines and textures (strokes, grid, dots) */
+  --azul-medio: #365c73;
+  --ease-cine: cubic-bezier(0.76, 0, 0.24, 1);
+  /* Live page colours, blended on scroll by <ScrollTheme>. */
+  --page-bg: var(--preto);
+  --page-fg: var(--branco);
+  --pill-bg: var(--grafite); /* header pills, blended by <ScrollTheme> */
+}
+
+@theme inline {
+  --color-preto: var(--preto);
+  --color-grafite: var(--grafite);
+  --color-branco: var(--branco);
+  --color-vermelho: var(--vermelho);
+  --color-fg: var(--page-fg);
+  --font-display: var(--font-dela-gothic);
+  --font-sans: var(--font-dosis);
+  --font-label: var(--font-inter);
+  --font-script: var(--font-great-vibes);
+}
+
+body {
+  background: var(--preto);
+  color: var(--branco);
+}
+
+::selection {
+  background: var(--vermelho);
+  color: var(--branco);
+}
+
+/* Small labels, menu and captions: Inter in sentence case, never the
+   spaced-out all-caps template look. Unlayered on purpose so it wins over any
+   leftover uppercase/tracking utilities. */
+.label {
+  font-family: var(--font-label);
+  font-style: normal;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+/* The shell carries the live colour so page-transition snapshots keep it;
+   the body stays black as the backdrop behind those transitions. */
+.page-shell {
+  background: var(--page-bg);
+  color: var(--page-fg);
+}
+
+/* Intro: only rendered when the <head> script decided it should play. */
+.intro {
+  display: none;
+}
+html[data-intro="play"] .intro,
+html[data-intro="resume"] .intro {
+  display: block;
+}
+html[data-intro="play"],
+html[data-intro="resume"] {
+  overflow: hidden;
+}
+/* Own view-transition layer on top of everything, so a transition that runs
+   while the intro is up (e.g. React revealing the page on load) can't paint
+   the header or the page over it. */
+.intro {
+  view-transition-name: intro;
+}
+::view-transition-group(intro) {
+  animation: none;
+  z-index: 30;
+}
+::view-transition-old(intro) {
+  display: none;
+}
+::view-transition-new(intro) {
+  animation: none;
+}
+
+/* Language chooser: each half of the curtain holds one language. The word is
+   an outline; hovering/focusing fills it outward from the horizon line. */
+.lang-word {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(194 232 255 / 0.4);
+}
+.lang-fill {
+  color: var(--branco);
+  -webkit-text-stroke: 0;
+  transition: clip-path 0.7s var(--ease-cine);
+}
+/* Insets overshoot the box (-25%) so accents and descenders aren't clipped. */
+.lang-option[data-half="top"] .lang-fill {
+  clip-path: inset(125% 0 -25% 0);
+}
+.lang-option[data-half="bottom"] .lang-fill {
+  clip-path: inset(-25% 0 125% 0);
+}
+.lang-option:is(:hover, :focus-visible, [data-picked="true"]) .lang-fill {
+  clip-path: inset(-25% 0 -25% 0);
+}
+.lang-option {
+  transition: opacity 0.5s var(--ease-cine);
+}
+.lang-chooser[data-hover] .lang-option:not(:hover, :focus-visible) {
+  opacity: 0.35;
+}
+
+/* Contact links: outline words that fill left-to-right on hover/focus. */
+.contact-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(194 232 255 / 0.45);
+}
+.contact-fill {
+  color: var(--branco);
+  clip-path: inset(-25% 100% -25% 0);
+  transition: clip-path 0.7s var(--ease-cine);
+}
+.contact-link:is(:hover, :focus-visible) .contact-fill {
+  clip-path: inset(-25% 0 -25% 0);
+}
+
+/* Timeline caption swaps like a subtitle. */
+.caption-in {
+  animation: caption-in 0.45s var(--ease-cine) both;
+}
+@keyframes caption-in {
+  from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+}
+
+/* Hero megaphone: its sound waves pulse outward, one after the other. */
+.mega-waves path {
+  animation: mega-wave 2.4s ease-in-out infinite;
+}
+.mega-waves path:nth-child(2) {
+  animation-delay: 0.3s;
+}
+@keyframes mega-wave {
+  0%, 100% { opacity: 0.15; }
+  40% { opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mega-waves path { animation: none; opacity: 0.6; }
+}
+
+/* "Now" marker on the about timeline. */
+.now-pulse {
+  box-shadow: 0 0 0 0 rgb(114 152 175 / 0.6);
+  animation: now-pulse 2s ease-out infinite;
+}
+@keyframes now-pulse {
+  70% { box-shadow: 0 0 0 12px rgb(114 152 175 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(114 152 175 / 0); }
+}
+
+/* Reel placeholder: a playhead that keeps running. */
+.reel-progress {
+  animation: reel-progress 6s linear infinite;
+}
+@keyframes reel-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Work viewer: fades in; each image eases in as you browse. */
+.viewer {
+  animation: viewer-in 0.5s var(--ease-cine) both;
+}
+.viewer-image {
+  animation: viewer-image-in 0.7s var(--ease-cine) both;
+}
+@keyframes viewer-in {
+  from { opacity: 0; }
+}
+@keyframes viewer-image-in {
+  from { opacity: 0; transform: scale(0.97); filter: blur(6px); }
+}
+
+/* Custom cursor: hide the native one only where ours is active, but keep
+   the text caret in fields. */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
+  cursor: text !important;
+}
+/* Own view-transition layer so it keeps following the pointer live while
+   pages swap, instead of freezing inside the page snapshot. */
+.site-cursor {
+  view-transition-name: site-cursor;
+}
+::view-transition-group(site-cursor) {
+  animation: none;
+  z-index: 40;
+}
+
+/* Page transition: the old page sinks and dims, the new one rises over it
+   as a rounded card. --vt-scroll keeps the old snapshot where it was. */
+.site-header {
+  view-transition-name: site-header;
+}
+::view-transition-group(site-header) {
+  z-index: 10;
+}
+::view-transition-group(.page-swap) {
+  animation: none;
+}
+::view-transition-old(.page-swap) {
+  animation: page-out 0.95s var(--ease-cine) both;
+}
+::view-transition-new(.page-swap) {
+  animation: page-in 0.95s var(--ease-cine) both;
+}
+@keyframes page-out {
+  from {
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px)));
+    opacity: 1;
+  }
+  to {
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px) - 10vh)) scale(0.96);
+    opacity: 0.2;
+  }
+}
+@keyframes page-in {
+  from {
+    transform: translateY(100vh);
+    clip-path: inset(0 round 2rem 2rem 0 0);
+  }
+  to {
+    transform: translateY(0);
+    clip-path: inset(0 round 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.page-swap),
+  ::view-transition-new(.page-swap) {
+    animation: none;
+  }
+}
