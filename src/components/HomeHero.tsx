@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion, whenIntroDone } from "@/lib/motion";
-import { scriptGlow, scriptHidden, scriptRevealStyle, scriptShown } from "@/lib/scriptReveal";
+import { scriptGlow, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown } from "@/lib/scriptReveal";
 import { NOITE } from "@/components/ui/CardBackdrop";
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { GRAIN } from "@/lib/grain";
@@ -30,7 +30,14 @@ export default function HomeHero() {
       const play = contextSafe!(() =>
         gsap
           .timeline({ delay: 0.75 })
-          .to("[data-name-script]", { ...scriptShown, duration: 1.6, ease: "power2.out" })
+          .to("[data-name-script]", {
+            ...scriptShown,
+            duration: 1.6,
+            ease: "power2.out",
+            onComplete() {
+              scriptSettle(this.targets()[0] as Element, true);
+            },
+          })
           .to("[data-name-top]", { color: DIM, duration: 1.2, ease: "power1.inOut" }, 0.5),
       );
       return whenIntroDone(play);
@@ -42,6 +49,8 @@ export default function HomeHero() {
   // drifts down, swells a touch and dissolves, so the next section rises out
   // of the plain page colour with no seam.
   const stage = useRef<HTMLDivElement>(null);
+  // Once the background has dissolved (hero scrolled away) it stops animating.
+  const [bgActive, setBgActive] = useState(true);
   useGSAP(
     (_, contextSafe) => {
       if (prefersReducedMotion()) return;
@@ -55,7 +64,14 @@ export default function HomeHero() {
           scale: 1.08,
           yPercent: 12,
           ease: "power1.in",
-          scrollTrigger: { trigger: stage.current, start: "top top", end: "bottom 15%", scrub: true },
+          scrollTrigger: {
+            trigger: stage.current,
+            start: "top top",
+            end: "bottom 15%",
+            scrub: true,
+            onLeave: () => setBgActive(false),
+            onEnterBack: () => setBgActive(true),
+          },
         },
       );
       return whenIntroDone(show);
@@ -76,7 +92,7 @@ export default function HomeHero() {
         }}
       >
         <div data-hero-bg-inner className="absolute inset-0 origin-top will-change-transform">
-          <MeshGradient {...NOITE} seed={3} />
+          <MeshGradient {...NOITE} seed={3} active={bgActive} />
           <div
             className="absolute inset-0 opacity-[0.07]"
             style={{ backgroundImage: `url("${GRAIN}")`, backgroundSize: "160px 160px" }}

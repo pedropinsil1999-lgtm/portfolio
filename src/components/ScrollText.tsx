@@ -3,7 +3,7 @@
 import { Fragment, useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
-import { scriptGlow, scriptHidden, scriptRevealStyle, scriptShown } from "@/lib/scriptReveal";
+import { scriptGlow, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown } from "@/lib/scriptReveal";
 
 const DIM = "#365c73"; // the sentence once the highlight takes over
 
@@ -33,6 +33,9 @@ export default function ScrollText({
       }
       const tl = gsap.timeline({
         scrollTrigger: { trigger: ref.current, start: "top 80%", end: "bottom 35%", scrub: true },
+        onUpdate() {
+          if (highlight) scriptSettle(ref.current?.querySelector("[data-highlight]") ?? null, this.progress() === 1);
+        },
       });
       tl.fromTo("[data-word]", { opacity: 0.15 }, { opacity: 1, ease: "none", stagger: 0.1, duration: 0.3 });
       if (highlight) {

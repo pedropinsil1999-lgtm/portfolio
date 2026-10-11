@@ -8,15 +8,21 @@
 // - The field is soft, so it renders into a tiny buffer (PIXEL_BUDGET) that
 //   CSS stretches to fit: a fraction of the GPU work of full resolution.
 // - It draws at most FPS frames a second; the motion is slow anyway.
-// - It only runs while `active`, on screen and with the tab visible.
+// - It only animates while `active`, on screen and with the tab visible, and
+//   only holds a GPU context while near the viewport (and `enabled`); the rest
+//   of the time a static CSS look-alike stands in. A page full of these keeps
+//   one or two live contexts instead of one per instance.
 // - Grain, blur, OKLab and colour grading were removed from the shader; grain
 //   comes from a static CSS layer instead (the caller adds it).
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
 
 const PIXEL_BUDGET = 90_000; // ~ 380×240: plenty for a blurry field
 const FPS = 30;
+// Phones and tablets have far weaker GPUs: fewer pixels and frames there.
+const TOUCH_PIXEL_BUDGET = 50_000;
+const TOUCH_FPS = 24;
 
 const VERT = `attribute vec2 a_position;
 void main() { gl_Position = vec4(a_position, 0.0, 1.0); }`;
@@ -106,8 +112,13 @@ export type MeshGradientProps = {
   speed?: number;
   /** Twist the field around the pointer (mouse only). */
   cursor?: boolean;
-  /** Pause rendering (e.g. while a card is covered by the next one). */
+  /** Animate. When false the last frame stays on screen (cheap pause). */
   active?: boolean;
+  /**
+   * Keep a GPU context at all. When false the canvas is dropped and the static
+   * CSS fallback shows instead (e.g. a card fully covered by the next one).
+   */
+  enabled?: boolean;
   className?: string;
 };
 
@@ -116,7 +127,49 @@ const hexToRgb = (hex: string) => {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 };
 
-export function MeshGradient({
+// Contexts are released a moment after unmount, so an immediate remount on
+// the same element (React's dev double-mount) takes the live context back.
+const pendingRelease = new WeakMap<HTMLCanvasElement, number>();
+
+/** Static look-alike of the field, shown before the canvas and when it is dropped. */
+const fallback = (colors: string[], vignette: number) => {
+  const [base, a = base, b = a, c = b] = colors;
+  const vig = vignette > 0 ? `radial-gradient(ellipse at center, transparent 45%, rgb(0 0 0 / ${0.5 * vignette}) 100%), ` : "";
+  return `${vig}radial-gradient(ellipse 70% 60% at 32% 38%, ${b} 0%, transparent 70%), radial-gradient(ellipse 60% 55% at 72% 68%, ${c} 0%, transparent 70%), ${a}`;
+};
+
+export function MeshGradient({ enabled = true, className, ...field }: MeshGradientProps) {
+  const box = useRef<HTMLDivElement>(null);
+  const [near, setNear] = useState(false);
+  // A fresh <canvas> per GPU context: a context that was released (or lost)
+  // can never be revived on the same element, so the element is swapped.
+  const [generation, setGeneration] = useState(0);
+
+  // Only hold a context while the field is on screen or about to be.
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setNear(entry.isIntersecting), { rootMargin: "50% 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={box}
+      aria-hidden="true"
+      className={className}
+      style={{ position: "absolute", inset: 0, background: fallback(field.colors, field.vignette ?? 0) }}
+    >
+      {near && enabled && <MeshCanvas key={generation} {...field} onLost={() => setGeneration((g) => g + 1)} />}
+    </div>
+  );
+}
+
+type MeshCanvasProps = Omit<MeshGradientProps, "enabled" | "className"> & { onLost: () => void };
+
+/** The live field: one canvas, one GPU context, released on unmount. */
+function MeshCanvas({
   colors,
   scale = 1.26,
   intensity = 0.35,
@@ -127,8 +180,8 @@ export function MeshGradient({
   speed = 0.575,
   cursor = false,
   active = true,
-  className,
-}: MeshGradientProps) {
+  onLost,
+}: MeshCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activeRef = useRef(active);
   const wake = useRef<() => void>(() => {});
@@ -140,8 +193,17 @@ export function MeshGradient({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const gl = canvas?.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
-    if (!canvas || !gl) return;
+    if (!canvas) return;
+    window.clearTimeout(pendingRelease.get(canvas));
+    pendingRelease.delete(canvas);
+    const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
+    if (!gl) return;
+    if (gl.isContextLost()) {
+      // This element's context was released (a hidden route shown again):
+      // ask for a fresh canvas.
+      onLost();
+      return;
+    }
 
     const compile = (type: number, src: string) => {
       const s = gl.createShader(type)!;
@@ -178,14 +240,19 @@ export function MeshGradient({
 
     const reduced = prefersReducedMotion();
     const rate = reduced ? 0 : speed;
+    const touch = window.matchMedia("(pointer: coarse)").matches;
+    const budget = touch ? TOUCH_PIXEL_BUDGET : PIXEL_BUDGET;
+    const fps = touch ? TOUCH_FPS : FPS;
+    // Bounds are cached and only re-read once per frame after a scroll, never
+    // on every pointer event (reading layout per event is what makes pages stutter).
     let bounds = canvas.getBoundingClientRect();
+    let boundsStale = false;
     let raf = 0;
     let lastDraw = 0;
-    let elapsed = 0;
+    let elapsed = seed * 7; // different start per instance, no visible jump
     let lastNow: number | null = null;
     let inView = true;
     let visible = !document.hidden;
-    // Pointer (normalised to -1..1 over the canvas) and how present it is.
     const target = { x: 0, y: 0, on: 0 };
     const mouse = { x: 0, y: 0, on: 0 };
     let last: { x: number; y: number } | null = null;
@@ -193,9 +260,9 @@ export function MeshGradient({
     const resize = () => {
       bounds = canvas.getBoundingClientRect();
       const area = Math.max(1, bounds.width * bounds.height);
-      const k = Math.sqrt(PIXEL_BUDGET / area);
-      const w = Math.max(1, Math.round(bounds.width * Math.min(1, k)));
-      const h = Math.max(1, Math.round(bounds.height * Math.min(1, k)));
+      const k = Math.min(1, Math.sqrt(budget / area));
+      const w = Math.max(1, Math.round(bounds.width * k));
+      const h = Math.max(1, Math.round(bounds.height * k));
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;
@@ -227,7 +294,7 @@ export function MeshGradient({
       mouse.x += (target.x - mouse.x) * follow;
       mouse.y += (target.y - mouse.y) * follow;
       mouse.on += (target.on - mouse.on) * follow;
-      if (now - lastDraw >= 1000 / FPS - 2) {
+      if (now - lastDraw >= 1000 / fps - 2) {
         lastDraw = now;
         draw();
       }
@@ -240,8 +307,11 @@ export function MeshGradient({
     wake.current = kick;
 
     const aim = () => {
-      if (!last) return;
-      bounds = canvas.getBoundingClientRect();
+      if (!last || !inView) return;
+      if (boundsStale) {
+        bounds = canvas.getBoundingClientRect();
+        boundsStale = false;
+      }
       const inside = last.x >= bounds.left && last.x <= bounds.right && last.y >= bounds.top && last.y <= bounds.bottom;
       if (inside) {
         const nx = ((last.x - bounds.left) / bounds.width) * 2 - 1;
@@ -261,6 +331,16 @@ export function MeshGradient({
       last = { x: e.clientX, y: e.clientY };
       aim();
     };
+    let scrollFrame = 0;
+    const onScroll = () => {
+      boundsStale = true;
+      if (!scrollFrame && inView) {
+        scrollFrame = requestAnimationFrame(() => {
+          scrollFrame = 0;
+          aim();
+        });
+      }
+    };
     const onLeave = () => {
       last = null;
       target.on = 0;
@@ -268,7 +348,7 @@ export function MeshGradient({
     };
     if (cursor && !reduced) {
       window.addEventListener("pointermove", onMove, { passive: true });
-      window.addEventListener("scroll", aim, { passive: true });
+      window.addEventListener("scroll", onScroll, { passive: true });
       document.documentElement.addEventListener("pointerleave", onLeave);
     }
 
@@ -279,6 +359,7 @@ export function MeshGradient({
     ro.observe(canvas);
     const io = new IntersectionObserver(([entry]) => {
       inView = entry.isIntersecting;
+      boundsStale = true;
       kick();
     });
     io.observe(canvas);
@@ -290,26 +371,38 @@ export function MeshGradient({
 
     resize();
     draw();
+    canvas.style.opacity = "1";
     kick();
 
     return () => {
       wake.current = () => {};
       cancelAnimationFrame(raf);
+      cancelAnimationFrame(scrollFrame);
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("scroll", aim);
+      window.removeEventListener("scroll", onScroll);
       document.documentElement.removeEventListener("pointerleave", onLeave);
       gl.deleteBuffer(buf);
       gl.deleteProgram(program);
-      // The context itself is kept: Next hides visited routes (their effects
-      // clean up) and shows them again on the same canvas, which must still
-      // have a live context. The browser frees it with the canvas.
+      // Free the GPU context (deferred, see pendingRelease). If the element
+      // comes back later (a hidden route shown again), the lost context is
+      // noticed and a fresh canvas is made.
+      const timer = window.setTimeout(() => {
+        pendingRelease.delete(canvas);
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+      }, 0);
+      pendingRelease.set(canvas, timer);
     };
     // Colours and shape are fixed per mount; remount to change them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <canvas ref={canvasRef} aria-hidden="true" className={className} style={{ display: "block", width: "100%", height: "100%" }} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ display: "block", width: "100%", height: "100%", opacity: 0, transition: "opacity 0.6s ease" }}
+    />
+  );
 }

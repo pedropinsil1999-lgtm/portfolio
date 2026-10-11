@@ -15,5 +15,27 @@ export const scriptRevealStyle = {
 export const scriptHidden = { "--reveal": "0%", opacity: 0, filter: "blur(8px)" };
 export const scriptShown = { "--reveal": "135%", opacity: 1, filter: "blur(0px)" };
 
+/**
+ * Drop the mask and filter once the script is fully written: a finished
+ * `blur(0px)` or mask still costs a separate render pass every frame. Restored
+ * as soon as the reveal runs backwards (scrubbed reveals).
+ */
+export function scriptSettle(el: Element | null, done: boolean) {
+  if (!(el instanceof HTMLElement)) return;
+  if (done) {
+    el.style.filter = "none";
+    el.style.maskImage = "none";
+    el.style.setProperty("-webkit-mask-image", "none");
+  } else if (el.style.maskImage === "none") {
+    el.style.maskImage = MASK;
+    el.style.setProperty("-webkit-mask-image", MASK);
+  }
+}
+
+/** For scroll-scrubbed blur: at rest (no blur) remove the filter entirely. */
+export function filterAtRest(el: Element | null, atRest: boolean) {
+  if (atRest && el instanceof HTMLElement) el.style.filter = "none";
+}
+
 /** Soft glow behind the script in the palette's light blue. */
 export const scriptGlow = "[text-shadow:0_0_0.4em_rgb(194_232_255_/_0.28)]";

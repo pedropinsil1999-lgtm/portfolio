@@ -7,7 +7,14 @@ import HoverArrow from "@/components/ui/HoverArrow";
 import CardBackdrop from "@/components/ui/CardBackdrop";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
-import { scriptGlow, scriptHidden, scriptRevealStyle, scriptShown } from "@/lib/scriptReveal";
+import {
+  filterAtRest,
+  scriptGlow,
+  scriptHidden,
+  scriptRevealStyle,
+  scriptSettle,
+  scriptShown,
+} from "@/lib/scriptReveal";
 
 export type StackCard = {
   index: string;
@@ -30,8 +37,12 @@ const tones = {
 /** Sticky cards that pile up like a deck; each one recedes out of focus as the next arrives. */
 export default function StackCards({ cards }: { cards: StackCard[] }) {
   const ref = useRef<HTMLDivElement>(null);
-  // Cards fully covered by the next one stop animating their background.
+  // A card's background freezes as soon as the next card starts to slide
+  // over it, and its GPU context is released once it is fully covered.
+  const [paused, setPaused] = useState<boolean[]>(() => cards.map(() => false));
   const [covered, setCovered] = useState<boolean[]>(() => cards.map(() => false));
+  const flag = (set: typeof setPaused, i: number, on: boolean) =>
+    set((prev) => (prev[i] === on ? prev : prev.map((v, k) => (k === i ? on : v))));
 
   useGSAP(
     () => {
@@ -43,23 +54,27 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
       wrappers.forEach((wrapper, i) => {
         // The script word under the title is written in as the card arrives,
         // and the word above dims so only the script stays lit.
+        const script = wrapper.querySelector("[data-script]");
         gsap
-          .timeline({ scrollTrigger: { trigger: wrapper, start: "top 65%", end: "top 20%", scrub: true } })
-          .fromTo(wrapper.querySelector("[data-script]"), scriptHidden, { ...scriptShown, ease: "power1.out", duration: 1 })
+          .timeline({
+            scrollTrigger: { trigger: wrapper, start: "top 65%", end: "top 20%", scrub: true },
+            onUpdate() {
+              scriptSettle(script, this.progress() === 1);
+            },
+          })
+          .fromTo(script, scriptHidden, { ...scriptShown, ease: "power1.out", duration: 1 })
           .to(wrapper.querySelector("[data-title-top]"), { color: DIM, ease: "none", duration: 0.6 }, 0.4);
         const next = wrappers[i + 1];
         if (!next) return;
-        ScrollTrigger.create({
-          trigger: next,
-          start: "top 25%",
-          endTrigger: document.documentElement,
-          end: "bottom bottom",
-          onToggle: (self) =>
-            setCovered((prev) => (prev[i] === self.isActive ? prev : prev.map((v, k) => (k === i ? self.isActive : v)))),
-        });
+        // The end is never reached (page bottom would have to hit the top of the
+        // screen), so the flags stay on all the way down, even at max scroll.
+        const rest = { trigger: next, endTrigger: document.documentElement, end: "bottom top" };
+        ScrollTrigger.create({ ...rest, start: "top 90%", onToggle: (self) => flag(setPaused, i, self.isActive) });
+        ScrollTrigger.create({ ...rest, start: "top 20%", onToggle: (self) => flag(setCovered, i, self.isActive) });
         // Rack focus: the card behind drifts slightly out of focus, not darker.
+        const card = wrapper.firstElementChild;
         gsap.fromTo(
-          wrapper.firstElementChild,
+          card,
           { scale: 1, filter: "blur(0px)" },
           {
             scale: 0.94,
@@ -67,8 +82,12 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
             ease: "none",
             // Finishes as the next card settles into its sticky slot.
             scrollTrigger: { trigger: next, start: "top 90%", end: "top 20%", scrub: true },
+            onUpdate() {
+              filterAtRest(card, this.progress() === 0);
+            },
           },
         );
+        filterAtRest(card, true);
       });
     },
     { scope: ref },
@@ -85,10 +104,10 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
         >
           <article
             data-surface={card.tone}
-            className={`group/card relative isolate flex h-full origin-top flex-col overflow-hidden will-change-[transform,filter] rounded-[1.75rem] p-5 md:rounded-[2rem] md:p-12 ${tones[card.tone]}`}
+            className={`group/card relative isolate flex h-full origin-top flex-col overflow-hidden will-change-transform rounded-[1.75rem] p-5 md:rounded-[2rem] md:p-12 ${tones[card.tone]}`}
           >
             {card.tone === "grafite" && (
-              <CardBackdrop seed={i + 1} active={!covered[i]} />
+              <CardBackdrop seed={i + 1} active={!paused[i]} enabled={!covered[i]} />
             )}
             {/* Phones: index over a left-aligned line; desktop: side by side. */}
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-6">

@@ -88,7 +88,12 @@ export default function ProofStack({ items }: { items: Art[] }) {
         x: gsap.quickTo(el, "x", { duration: 0.8, ease: "power3.out" }),
         y: gsap.quickTo(el, "y", { duration: 0.8, ease: "power3.out" }),
       }));
+      // Parallax only while the pile is on screen.
+      let onScreen = true;
+      const io = new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting));
+      if (root.current) io.observe(root.current);
       const onMove = (e: PointerEvent) => {
+        if (!onScreen) return;
         const nx = e.clientX / window.innerWidth - 0.5;
         const ny = e.clientY / window.innerHeight - 0.5;
         orderRef.current.forEach((itemIndex, depth) => {
@@ -101,6 +106,7 @@ export default function ProofStack({ items }: { items: Art[] }) {
 
       return () => {
         offIntro();
+        io.disconnect();
         window.removeEventListener("pointermove", onMove);
       };
     },

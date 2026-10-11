@@ -22,20 +22,26 @@ export default function Header() {
   const other = lang === "pt" ? "en" : "pt";
   const header = useRef<HTMLElement>(null);
 
-  // Watch what sits under the pills while scrolling (one hit test per frame).
+  // Watch what sits under the pills while scrolling (throttled hit tests).
   useEffect(() => {
     const el = header.current;
     if (!el) return;
-    let frame = 0;
+    let timer = 0;
     let current = "";
-    const check = () => {
-      frame = 0;
-      let found = "";
-      for (const p of el.querySelectorAll<HTMLElement>("[data-pill]")) {
+    // The header is fixed, so the points to probe (each pill's centre) only
+    // change on resize; they are measured then, not on every check.
+    let points: [number, number][] = [];
+    const measure = () => {
+      points = [...el.querySelectorAll<HTMLElement>("[data-pill]")].map((p) => {
         const r = p.getBoundingClientRect();
-        const under = document
-          .elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2)
-          .find((n) => !el.contains(n));
+        return [r.left + r.width / 2, r.top + r.height / 2];
+      });
+    };
+    const check = () => {
+      timer = 0;
+      let found = "";
+      for (const [x, y] of points) {
+        const under = document.elementsFromPoint(x, y).find((n) => !el.contains(n));
         const surface = under?.closest<HTMLElement>("[data-surface]")?.dataset.surface ?? "";
         if (overSurface[surface]) {
           found = overSurface[surface];
@@ -47,14 +53,22 @@ export default function Header() {
       if (found) el.style.setProperty("--pill-surface", found);
       else el.style.removeProperty("--pill-surface");
     };
+    // A few checks a second are plenty (the colour change itself is a 0.5s fade).
     const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(check);
+      if (!timer) timer = window.setTimeout(check, 90);
+    };
+    const onResize = () => {
+      measure();
+      onScroll();
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    measure();
     check();
     return () => {
-      cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, [pathname]);
 

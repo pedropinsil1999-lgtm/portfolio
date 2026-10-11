@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion, whenIntroDone } from "@/lib/motion";
+import { filterAtRest } from "@/lib/scriptReveal";
 
 /**
  * Hero object: a glossy megaphone resting at an angle over the name.
@@ -21,12 +22,26 @@ export default function HeroMegaphone({ src }: { src?: string }) {
       const enter = "[data-mega-enter]";
       gsap.set(enter, { y: 40, autoAlpha: 0, filter: "blur(22px)" });
       const play = contextSafe!(() =>
-        gsap.to(enter, { y: 0, autoAlpha: 1, filter: "blur(0px)", duration: 1.6, ease: "expo.out", delay: 0.35 }),
+        gsap.to(enter, {
+          y: 0,
+          autoAlpha: 1,
+          filter: "blur(0px)",
+          duration: 1.6,
+          ease: "expo.out",
+          delay: 0.35,
+          // A finished blur(0px) still costs a render pass; drop it.
+          clearProps: "filter",
+        }),
       );
 
       const hero = root.current?.closest("section");
       gsap
-        .timeline({ scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } })
+        .timeline({
+          scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true },
+          onUpdate() {
+            filterAtRest(root.current?.querySelector("[data-mega-fade]") ?? null, this.progress() === 0);
+          },
+        })
         .to("[data-mega-scroll]", { rotate: 38, yPercent: 2, ease: "none", duration: 1 }, 0)
         .to("[data-mega-fade]", { filter: "blur(9px)", ease: "none", duration: 1 }, 0)
         // Gone before the hero has left, so it never reaches an edge.

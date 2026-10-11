@@ -16,10 +16,20 @@ export const NOITE = {
  * Animated background shared by the site's cards. Place it inside a
  * `relative isolate overflow-hidden` card; it sits behind the content.
  */
-export default function CardBackdrop({ seed = 1, active = true }: { seed?: number; active?: boolean }) {
+export default function CardBackdrop({
+  seed = 1,
+  active = true,
+  enabled = true,
+}: {
+  seed?: number;
+  /** Animate (false keeps the last frame). */
+  active?: boolean;
+  /** Hold a GPU context at all (false shows the static look-alike). */
+  enabled?: boolean;
+}) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-      <MeshGradient {...NOITE} seed={seed} active={active} />
+      <MeshGradient {...NOITE} seed={seed} active={active} enabled={enabled} />
       {/* Fine grain dithers the gradient so it never bands. */}
       <div
         className="absolute inset-0 opacity-[0.07]"
