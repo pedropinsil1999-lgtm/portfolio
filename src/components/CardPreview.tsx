@@ -28,7 +28,7 @@ const move = "transition-[translate,rotate,scale,opacity] duration-700 ease-[var
 export default function CardPreview({ preview }: { preview: Preview }) {
   if (preview.kind === "reel") {
     return (
-      <div className="group/preview relative aspect-video w-[min(62vw,26rem)] overflow-hidden rounded-[1.25rem] border border-branco/15 bg-preto/50">
+      <div className="group/preview relative aspect-video w-[min(62vw,26rem,170cqh)] overflow-hidden rounded-[1.25rem] border border-branco/15 bg-preto/50">
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="flex h-16 w-16 items-center justify-center rounded-full border border-branco/30 transition-transform duration-700 ease-[var(--ease-cine)] group-hover/preview:scale-110">
             <span className="ml-1 h-0 w-0 border-y-[9px] border-l-[14px] border-y-transparent border-l-branco" />
@@ -55,7 +55,7 @@ export default function CardPreview({ preview }: { preview: Preview }) {
     <div
       className={cn(
         "group/preview relative",
-        isArt ? "aspect-[4/5] w-[min(32vw,12rem)]" : "aspect-[16/10] w-[min(62vw,20rem)]",
+        isArt ? "aspect-[4/5] w-[min(32vw,12rem,78cqh)]" : "aspect-[16/10] w-[min(62vw,20rem,120cqh)]",
       )}
     >
       {images.map((src, i) => (
