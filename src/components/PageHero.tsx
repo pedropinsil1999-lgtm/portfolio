@@ -4,6 +4,8 @@ import { useRef, type ReactNode } from "react";
 import { useHeroReveal } from "@/lib/useHeroReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
+const TOP_FADE = "linear-gradient(to bottom, transparent, #000 16%)";
+
 /**
  * Opening frame of the inner pages: title at the bottom, the space above it
  * for a page-specific piece (`children`, e.g. the proof stack on Work), and
@@ -30,7 +32,12 @@ export default function PageHero({
       className="relative isolate flex min-h-svh flex-col px-6 pb-16 pt-28 md:px-12 md:pb-24 md:pt-32"
     >
       {background && (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+          // Top fades into the page colour, which also tints the iPhone status bar.
+          style={{ maskImage: TOP_FADE, WebkitMaskImage: TOP_FADE }}
+        >
           {background}
         </div>
       )}

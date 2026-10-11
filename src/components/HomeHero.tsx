@@ -112,10 +112,11 @@ export default function HomeHero() {
         data-hero-bg
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        // Bottom dissolves into the page colour, so even at rest there is no edge.
+        // Both edges dissolve into the page colour: no edge at rest, and the top
+        // meets the iPhone status bar (tinted with the page colour) seamlessly.
         style={{
-          maskImage: "linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%)",
+          maskImage: "linear-gradient(to bottom, transparent 0%, #000 16%, #000 50%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 16%, #000 50%, transparent 100%)",
         }}
       >
         <div data-hero-bg-inner className="absolute inset-0 origin-top will-change-transform">

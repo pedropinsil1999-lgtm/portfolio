@@ -29,8 +29,13 @@
   --font-script: var(--font-great-vibes);
 }
 
+/* The page canvas follows the live colour too: on iPhone, Safari tints the
+   status bar and the toolbar from it, so they always match the section. */
+html,
 body {
-  background: var(--preto);
+  background: var(--page-bg);
+}
+body {
   color: var(--branco);
 }
 
@@ -51,11 +56,20 @@ body {
   line-height: 1.35;
 }
 
-/* The shell carries the live colour so page-transition snapshots keep it;
-   the body stays black as the backdrop behind those transitions. */
+/* The shell carries the live colour so page-transition snapshots keep it. */
 .page-shell {
   background: var(--page-bg);
   color: var(--page-fg);
+}
+/* During a page swap the backdrop behind the two pages stays dark, whatever
+   colour the page canvas had at that moment. */
+::view-transition {
+  background: var(--preto);
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  opacity: 0;
 }
 
 /* Intro: only rendered when the <head> script decided it should play. */
