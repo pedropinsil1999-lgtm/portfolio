@@ -97,7 +97,7 @@ export default function HomeHero() {
           </p>
         </div>
 
-        <h1 className="mt-6 font-display text-[clamp(3.5rem,15vw,15rem)] leading-[0.88] text-branco">
+        <h1 className="mt-6 font-display text-[clamp(3.5rem,19vw,15rem)] leading-[0.88] text-branco md:text-[clamp(3.5rem,15vw,15rem)]">
           <span className="block overflow-hidden pb-[0.08em]">
             <span data-reveal data-name-top className="block">
               Pedro
@@ -107,7 +107,7 @@ export default function HomeHero() {
           <span
             data-name-script
             style={scriptRevealStyle}
-            className={`relative z-10 -mx-[0.25em] -mb-[0.2em] -mt-[0.5em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.45em] pt-[0.3em] font-script text-[1.45em] font-normal leading-[0.9] tracking-normal ${scriptGlow}`}
+            className={`relative z-10 -mx-[0.25em] -mb-[0.2em] -mt-[0.5em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.45em] pt-[0.3em] font-script text-[1.22em] font-normal md:text-[1.45em] leading-[0.9] tracking-normal ${scriptGlow}`}
           >
             Henrique
           </span>

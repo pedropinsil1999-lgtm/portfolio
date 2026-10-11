@@ -160,7 +160,7 @@ export default function ProofStack({ items }: { items: Art[] }) {
         onClick={onClick}
         aria-label={`${t.work.shuffle}: ${top.title}`}
         data-cursor={t.work.shuffle}
-        className="absolute left-1/2 top-[38%] aspect-[4/5] w-[min(44vw,13rem)] -translate-x-1/2 -translate-y-1/2 outline-none md:left-[64%] md:top-1/2"
+        className="absolute left-1/2 top-[38%] aspect-[4/5] w-[min(54vw,15rem)] -translate-x-1/2 -translate-y-1/2 outline-none md:left-[64%] md:top-1/2 md:w-[min(26vw,19rem,30svh)] xl:left-[58%] xl:w-[min(22vw,24rem,31svh)]"
       >
         {items.map((art, i) => (
           <div key={art.slug} data-proof className="absolute inset-0 will-change-transform">
@@ -170,7 +170,7 @@ export default function ProofStack({ items }: { items: Art[] }) {
                 alt={i === order[0] ? `${art.title} | ${art.kind[lang]}` : ""}
                 width={1080}
                 height={1350}
-                sizes="13rem"
+                sizes="(min-width: 1280px) 26rem, (min-width: 768px) 19rem, 13rem"
                 priority={i < 3}
                 className="h-full w-full object-cover"
               />

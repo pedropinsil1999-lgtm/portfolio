@@ -50,7 +50,7 @@ export default function ArtGallery({ items }: { items: Art[] }) {
     <>
       <div
         ref={grid}
-        className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8"
+        className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-6 sm:gap-y-14 lg:grid-cols-3 lg:gap-x-8"
       >
         {items.map((art, i) => (
           <button
@@ -63,22 +63,22 @@ export default function ArtGallery({ items }: { items: Art[] }) {
             onClick={() => setOpen(i)}
             className="group text-left"
           >
-            <div data-art-frame className="overflow-hidden rounded-[1.25rem] bg-grafite">
+            <div data-art-frame className="overflow-hidden rounded-[0.9rem] bg-grafite sm:rounded-[1.25rem]">
               <Image
                 src={art.src}
                 alt={`${art.title} | ${art.kind[lang]}`}
                 width={1080}
                 height={1350}
-                sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+                sizes="(min-width: 1024px) 30vw, 48vw"
                 className="aspect-[4/5] h-auto w-full object-cover transition-transform duration-[1.2s] ease-[var(--ease-cine)] group-hover:scale-[1.04]"
               />
             </div>
-            <div className="mt-5 flex items-baseline justify-between gap-4">
-              <div>
-                <p className="label text-[0.95rem] text-fg/50">{art.kind[lang]}</p>
-                <h3 className="mt-2 font-display text-xl text-fg md:text-2xl">{art.title}</h3>
+            <div className="mt-3 flex items-baseline justify-between gap-2 sm:mt-5 sm:gap-4">
+              <div className="min-w-0">
+                <p className="label text-[0.75rem] text-fg/50 sm:text-[0.95rem]">{art.kind[lang]}</p>
+                <h3 className="mt-1 font-display text-base leading-tight text-fg sm:mt-2 sm:text-xl md:text-2xl">{art.title}</h3>
               </div>
-              <span className="label text-[0.95rem] text-fg/40">{pad(i + 1)}</span>
+              <span className="label hidden text-[0.95rem] text-fg/40 sm:inline">{pad(i + 1)}</span>
             </div>
           </button>
         ))}

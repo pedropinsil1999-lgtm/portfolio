@@ -70,12 +70,12 @@ export default function VideoShowcase({ items }: { items: Video[] }) {
               </>
             )}
           </div>
-          <div className="mt-5 flex items-baseline justify-between gap-4">
-            <div>
-              <p className="label text-[0.95rem] text-fg/50">{video.kind[lang]}</p>
-              <h3 className="mt-2 font-display text-lg text-fg md:text-2xl">{video.title[lang]}</h3>
+          <div className="mt-3 flex items-baseline justify-between gap-2 sm:mt-5 sm:gap-4">
+            <div className="min-w-0">
+              <p className="label text-[0.75rem] text-fg/50 sm:text-[0.95rem]">{video.kind[lang]}</p>
+              <h3 className="mt-1 font-display text-base text-fg sm:mt-2 sm:text-lg md:text-2xl">{video.title[lang]}</h3>
             </div>
-            <span className="label text-[0.95rem] text-fg/40">{pad(i + 1)}</span>
+            <span className="label hidden text-[0.95rem] text-fg/40 sm:inline">{pad(i + 1)}</span>
           </div>
         </article>
       ))}
