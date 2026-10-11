@@ -17,6 +17,8 @@ export type Video = {
   slug: string;
   title: Localized;
   kind: Localized;
+  /** Short explanation shown beside the video. */
+  about: Localized;
   /** Vertical (9:16) file in /public/work; while missing, a placeholder shows. */
   src?: string;
   poster?: string;
@@ -107,11 +109,19 @@ export const videos: Video[] = [
     slug: "video-01",
     title: { pt: "Vídeo 01", en: "Video 01" },
     kind: { pt: "Roteiro, captação e edição", en: "Script, shoot and edit" },
+    about: {
+      pt: "Texto provisório: aqui entra o contexto do vídeo, para quem foi feito, o que você fez e o resultado.",
+      en: "Placeholder: the video's context, who it was for, what you did and the result go here.",
+    },
   },
   {
     slug: "video-02",
     title: { pt: "Vídeo 02", en: "Video 02" },
     kind: { pt: "Edição e motion", en: "Edit and motion" },
+    about: {
+      pt: "Texto provisório: aqui entra o contexto do vídeo, para quem foi feito, o que você fez e o resultado.",
+      en: "Placeholder: the video's context, who it was for, what you did and the result go here.",
+    },
   },
 ];
 

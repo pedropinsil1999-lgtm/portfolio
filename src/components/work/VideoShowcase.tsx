@@ -9,8 +9,10 @@ import type { Video } from "@/content/work";
 const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
- * Vertical (9:16) audiovisual pieces side by side. Each frame is unmasked as
- * it scrolls in; until a file is set it shows a player placeholder.
+ * Vertical (9:16) audiovisual pieces, each paired with its description: the
+ * frame on the left, the text on the right. Pairs sit side by side on wide
+ * screens and stack on phones. Each frame is unmasked as it scrolls in; until
+ * a file is set it shows a player placeholder.
  */
 export default function VideoShowcase({ items }: { items: Video[] }) {
   const { lang, t } = useI18n();
@@ -36,9 +38,12 @@ export default function VideoShowcase({ items }: { items: Video[] }) {
   );
 
   return (
-    <div ref={root} className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:gap-8 md:gap-12">
+    <div ref={root} className="mx-auto grid max-w-2xl gap-14 lg:max-w-none lg:grid-cols-2 lg:gap-10 xl:gap-16">
       {items.map((video, i) => (
-        <article key={video.slug}>
+        <article
+          key={video.slug}
+          className="grid grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] gap-5 sm:gap-8"
+        >
           <div
             data-video-frame
             className="relative aspect-[9/16] overflow-hidden rounded-[1.25rem] border border-branco/10 bg-grafite/40"
@@ -70,12 +75,17 @@ export default function VideoShowcase({ items }: { items: Video[] }) {
               </>
             )}
           </div>
-          <div className="mt-3 flex items-baseline justify-between gap-2 sm:mt-5 sm:gap-4">
-            <div className="min-w-0">
-              <p className="label text-[0.75rem] text-fg/50 sm:text-[0.95rem]">{video.kind[lang]}</p>
-              <h3 className="mt-1 font-display text-base text-fg sm:mt-2 sm:text-lg md:text-2xl">{video.title[lang]}</h3>
+          {/* Description beside the frame: index and craft on top, the story below. */}
+          <div className="flex min-w-0 flex-col justify-between py-1">
+            <div>
+              <span className="label text-[0.95rem] text-vermelho">{pad(i + 1)}</span>
+              <p className="label mt-2 text-[0.85rem] text-fg/50 sm:text-[0.95rem]">{video.kind[lang]}</p>
             </div>
-            <span className="label hidden text-[0.95rem] text-fg/40 sm:inline">{pad(i + 1)}</span>
+            <div>
+              <h3 className="font-display text-xl leading-tight text-fg sm:text-2xl xl:text-3xl">{video.title[lang]}</h3>
+              <div className="my-4 h-px w-10 bg-branco/20 sm:my-5" />
+              <p className="text-sm leading-relaxed text-fg/70 sm:text-base">{video.about[lang]}</p>
+            </div>
           </div>
         </article>
       ))}
