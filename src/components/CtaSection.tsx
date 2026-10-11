@@ -9,7 +9,7 @@ export default function CtaSection({ lang, t }: { lang: Locale; t: Dictionary })
   return (
     <section
       data-theme="branco"
-      className="relative isolate flex min-h-svh flex-col items-center overflow-hidden justify-center px-6 py-32 text-center text-fg"
+      className="relative isolate flex min-h-[60svh] flex-col items-center justify-center overflow-hidden px-6 py-20 text-center text-fg md:min-h-[70svh] md:py-32"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <Liquid />

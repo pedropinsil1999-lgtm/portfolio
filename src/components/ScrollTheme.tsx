@@ -62,10 +62,13 @@ export default function ScrollTheme() {
         (s) => s.getClientRects().length > 0,
       );
       const vh = window.innerHeight;
+      const max = document.documentElement.scrollHeight - vh;
       list = sections.map((s) => themes[s.dataset.theme as ThemeName] ?? themes.preto);
       bounds = sections.map((s) => {
         const top = s.getBoundingClientRect().top + window.scrollY;
-        return { start: top - vh * 0.75, end: top - vh * 0.25 };
+        const start = top - vh * 0.75;
+        // A short last section never reaches 25%: finish at the page bottom instead.
+        return { start, end: Math.max(start + 1, Math.min(top - vh * 0.25, max)) };
       });
       apply(window.scrollY);
     };

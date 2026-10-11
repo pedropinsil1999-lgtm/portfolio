@@ -30,7 +30,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 
       <CvDownload />
 
-      <section data-theme="preto" className="px-6 py-40 md:px-12 md:py-56">
+      <section data-theme="preto" className="px-6 py-24 md:px-12 md:py-36">
         <p className="mb-10 label text-[0.95rem] text-fg/50">{t.statement.label}</p>
         <ScrollText
           text={t.statement.text}
@@ -39,7 +39,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         />
       </section>
 
-      <section data-theme="preto" className="px-4 pb-[20vh] md:px-12">
+      <section data-theme="preto" className="px-4 pb-12 md:px-12 md:pb-16">
         <p className="mb-10 px-2 label text-[0.95rem] text-fg/50 md:px-0">
           {t.services.label}
         </p>

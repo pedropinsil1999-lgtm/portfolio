@@ -24,7 +24,7 @@ export async function generateMetadata({
 
 function SectionHead({ label, title }: { label: string; title: string }) {
   return (
-    <div className="mb-16 md:mb-24">
+    <div className="mb-12 md:mb-16">
       <p className="label text-[0.95rem] text-fg/50">{label}</p>
       <h2 className="mt-6 max-w-[16ch] font-display text-[clamp(2rem,5vw,4.5rem)] leading-[1.02] text-fg">
         {title}
@@ -46,7 +46,7 @@ export default async function Trabalhos({ params }: PageProps<"/[lang]/trabalhos
 
       {/* Each section gets a quiet background of its own; SectionBackdrop fades
           it out at the edges so they hand over cleanly. */}
-      <section id="direcao-visual" data-theme="preto" className="relative isolate scroll-mt-24 px-6 pb-40 pt-32 md:px-12 md:pb-56 md:pt-44">
+      <section id="direcao-visual" data-theme="preto" className="relative isolate scroll-mt-24 px-6 py-20 md:px-12 md:py-28">
         <SectionBackdrop>
           <AmbientLight anchor={{ x: 0.78, y: 0.12 }} pull={0.8} size="90vmax" />
         </SectionBackdrop>
@@ -54,7 +54,7 @@ export default async function Trabalhos({ params }: PageProps<"/[lang]/trabalhos
         <ArtGallery items={arts} />
       </section>
 
-      <section id="audiovisual" data-theme="preto" className="relative isolate scroll-mt-24 px-6 pb-40 pt-32 md:px-12 md:pb-56 md:pt-44">
+      <section id="audiovisual" data-theme="preto" className="relative isolate scroll-mt-24 px-6 py-20 md:px-12 md:py-28">
         <SectionBackdrop>
           <FilmGrain />
         </SectionBackdrop>
@@ -62,7 +62,7 @@ export default async function Trabalhos({ params }: PageProps<"/[lang]/trabalhos
         <VideoShowcase items={videos} />
       </section>
 
-      <section id="sites" data-theme="preto" className="relative isolate scroll-mt-24 px-6 pb-32 pt-32 md:px-12 md:pb-44 md:pt-40">
+      <section id="sites" data-theme="preto" className="relative isolate scroll-mt-24 px-6 py-20 md:px-12 md:py-28">
         <SectionBackdrop className="opacity-75">
           <Noite seed={5} />
         </SectionBackdrop>

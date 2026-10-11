@@ -47,7 +47,8 @@ export default function Liquid() {
           autoAlpha: 1,
           // Lags the colour blend a little so the liquid lands on a light page.
           ease: "power2.in",
-          scrollTrigger: { trigger: section, start: "top 75%", end: "top 15%", scrub: true },
+          // Clamped: a short closing section may not reach 15% before the page ends.
+          scrollTrigger: { trigger: section, start: "top 75%", end: "clamp(top 15%)", scrub: true },
         },
       );
     },
