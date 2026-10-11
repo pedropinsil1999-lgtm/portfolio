@@ -63,6 +63,18 @@ body {
 }
 /* During a page swap the backdrop behind the two pages stays dark, whatever
    colour the page canvas had at that moment. */
+/* See the strips in the layout: sampled by Safari, never seen. Opacity 0
+   still counts for its sampling (display: none would not). */
+.edge-tint {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: 12px;
+  background: var(--page-bg);
+  opacity: 0;
+  view-transition-name: none;
+}
 ::view-transition {
   background: var(--preto);
 }

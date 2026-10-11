@@ -74,6 +74,11 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
             <Intro />
             <ScrollTheme />
             <Header />
+            {/* Safari on iPhone tints its status bar and toolbar from fixed,
+                full-width strips at the screen edges (the menu pills otherwise).
+                These invisible ones carry the live page colour instead. */}
+            <div aria-hidden="true" className="edge-tint top-0" />
+            <div aria-hidden="true" className="edge-tint bottom-0" />
             <CustomCursor />
             {/* Each route swap rises over the previous page like a new card. */}
             <ViewTransition update="page-swap" default="none">
