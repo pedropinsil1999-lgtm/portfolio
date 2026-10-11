@@ -80,7 +80,7 @@ export default function CvDownload() {
 
   return (
     <section className="px-6 pt-16 md:px-12 md:pt-24">
-      <div className="relative isolate grid items-center gap-14 overflow-hidden rounded-[2rem] border border-branco/12 p-6 md:grid-cols-[1fr_auto] md:gap-20 md:p-14">
+      <div className="relative isolate grid items-center gap-14 overflow-hidden rounded-[2rem] border border-branco/12 p-6 md:grid-cols-2 md:gap-12 md:p-14">
         <CardBackdrop seed={7} />
         <div>
           <p className="label text-[0.95rem] text-branco/50">{t.cv.label}</p>
@@ -138,8 +138,9 @@ export default function CvDownload() {
           </div>
         </div>
 
-        {/* Paper stack: the selected sheet comes forward, the other recedes. */}
-        <div className="relative mx-auto aspect-[1/1.414] w-[min(60vw,15rem)] md:w-[17rem]">
+        {/* Paper stack: the selected sheet comes forward, the other recedes.
+            Centred in its half of the card, so it stays near the copy. */}
+        <div className="relative mx-auto aspect-[1/1.414] w-[min(60vw,15rem)] md:w-[17rem] xl:w-[19rem]">
           {langs.map((l) => {
             const front = l === lang;
             return (

@@ -100,7 +100,7 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
 
             {/* A size container, so the preview scales to the room left between the
                 text and the title (cqh units in CardPreview) and never overlaps them. */}
-            <div className="flex min-h-0 flex-1 items-center justify-center py-2 [container-type:size] md:justify-end md:py-3 md:pr-[16%]">
+            <div className="flex min-h-0 flex-1 items-center justify-center py-2 [container-type:size] md:justify-end md:py-3 md:pr-[16%] xl:absolute xl:bottom-[10%] xl:right-[4%] xl:top-[18%] xl:w-[40%] xl:justify-center xl:p-0">
               {card.preview &&
                 (card.link ? (
                   <Link
@@ -116,11 +116,11 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
                 ))}
             </div>
 
-            {/* Title and button share a row only when there is room for both, so a
-                long title ("Comunicação") never pushes the button off the card. */}
-            <div className="flex flex-col gap-5 md:gap-6 xl:flex-row xl:items-end xl:justify-between">
+            {/* Title, tags and button stack on the left; on wide screens the preview
+                takes the whole right half of the card beside them. */}
+            <div className="flex flex-col gap-5 md:gap-6 xl:mt-auto xl:max-w-[52%]">
               <div className="min-w-0">
-                <h3 className="font-display text-[clamp(1.9rem,8.6vw,6.5rem)] leading-[0.95]">
+                <h3 className="font-display text-[clamp(1.9rem,8.6vw,6.5rem)] leading-[0.95] xl:text-[clamp(2.5rem,5.4vw,6rem)]">
                   <span data-title-top className="block">
                     {card.title[0]}
                   </span>
@@ -147,7 +147,7 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
               {card.link && (
                 <Link
                   href={card.link.href}
-                  className="group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-5 py-2.5 label text-[0.9rem] md:px-6 md:py-3 md:text-[0.95rem] text-preto transition-colors hover:bg-vermelho hover:text-branco xl:self-auto"
+                  className="group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-5 py-2.5 label text-[0.9rem] md:px-6 md:py-3 md:text-[0.95rem] text-preto transition-colors hover:bg-vermelho hover:text-branco"
                 >
                   {card.link.label}
                   <HoverArrow />
