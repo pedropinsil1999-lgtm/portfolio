@@ -42,6 +42,11 @@ export default function Liquid() {
       window.clearTimeout(timer);
       if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
       else window.clearTimeout(idle);
+      // Paper's shader leaves its GPU context to the garbage collector; free it
+      // now, or every visit adds one (browsers cap them and drop the oldest,
+      // which may be one still on screen). Runs before the shader's own clean-up.
+      const canvas = el.querySelector("canvas");
+      canvas?.getContext("webgl2")?.getExtension("WEBGL_lose_context")?.loseContext();
     };
   }, []);
 

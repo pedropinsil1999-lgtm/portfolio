@@ -108,10 +108,12 @@ export default function HomeHero() {
           <feColorMatrix type="matrix" values={GOO_NONE} />
         </filter>
       </svg>
+      {/* Clipped: on scroll the field drifts down past the hero's edge, and
+          must not show over the next section. */}
       <div
         data-hero-bg
         aria-hidden
-        className="pointer-events-none absolute inset-0"
+        className="pointer-events-none absolute inset-0 overflow-hidden"
       >
         <div data-hero-bg-inner className="absolute inset-0 origin-top will-change-transform">
           <MeshGradient {...NOITE} seed={3} active={bgActive} />

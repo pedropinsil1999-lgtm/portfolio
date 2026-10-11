@@ -10,9 +10,12 @@
 //   fixed size (the shader is told the element's proportions instead), since
 //   resizing a GPU canvas stalls the page for a few ms.
 // - It draws at most FPS frames a second; the motion is slow anyway.
-// - It only animates while `active`, on screen and with the tab visible, and
-//   only holds a GPU context while near the viewport (and `enabled`); the rest
-//   of the time a static CSS look-alike stands in. A page full of these keeps
+// - It only holds a GPU context while it animates: `active`, `enabled` and
+//   near the viewport. When it stops, its last frame stays behind as a plain
+//   image (e.g. a card being covered by the next one), so a paused field is
+//   ordinary painted content, never a frozen GPU canvas (some graphics
+//   drivers showed those partly black). Before its first frame a static CSS
+//   look-alike stands in. A page full of these keeps
 //   one or two live contexts instead of one per instance, and contexts are
 //   pooled: a page swap reuses them instead of compiling the shader again.
 // - Grain, blur, OKLab and colour grading were removed from the shader; grain
@@ -34,29 +37,9 @@ const FRAG = `precision mediump float;
 uniform vec3 u_colors[6];
 uniform vec2 u_buffer;  // drawing buffer size
 uniform vec4 u_scene;   // element size (for its proportions), time, colour count
-uniform vec4 u_shape;   // scale, intensity, softness, warp
+uniform vec4 u_shape;   // scale, intensity, softness, -
 uniform vec4 u_misc;    // seed, vignette, cursor presence, cursor strength
 uniform vec4 u_mouse;   // cursor.xy (-1..1), cursor radius, -
-
-float hash21(vec2 p) {
-  p = mod(p, 31.0);
-  p = fract(p * vec2(234.34, 435.345));
-  p += dot(p, p + 34.23);
-  return fract(p.x * p.y);
-}
-float noise(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  vec2 u = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), u.x),
-             mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x), u.y);
-}
-float fbm(vec2 p) {
-  float v = 0.0;
-  float a = 0.5;
-  for (int i = 0; i < 3; i++) { v += a * noise(p); p = p * 2.03 + vec2(17.0, 9.2); a *= 0.5; }
-  return v;
-}
 
 void main() {
   vec2 res = u_scene.xy;
@@ -75,9 +58,6 @@ void main() {
   }
 
   p *= u_shape.x;
-  if (u_shape.w > 0.0) {
-    p += u_shape.w * (vec2(fbm(p * 1.8 + u_misc.x), fbm(p * 1.8 + vec2(5.2, 1.3))) - 0.5);
-  }
 
   // Coloured blobs orbiting slowly, blended by distance.
   vec3 col = u_colors[0] * 0.16;
@@ -108,8 +88,6 @@ export type MeshGradientProps = {
   intensity?: number;
   /** Blob softness (0 = tight, 1 = very soft). */
   softness?: number;
-  /** Organic distortion of the field (0 = none). */
-  warp?: number;
   vignette?: number;
   seed?: number;
   /** Motion speed; 0 freezes it. */
@@ -146,8 +124,13 @@ type Slot = {
   lost: boolean;
 };
 const pool: Slot[] = [];
-const MAX_POOLED = 3;
+// Enough for the most fields ever live together (hero, CV card and two
+// stacked cards), so released contexts are kept rather than rebuilt.
+const MAX_POOLED = 4;
+const WARM = 3;
 let inUse = 0;
+let lastScroll = -Infinity;
+let watchingScroll = false;
 
 function createSlot(): Slot | null {
   const canvas = document.createElement("canvas");
@@ -218,12 +201,18 @@ let warming = false;
 function warmPool() {
   if (warming) return;
   warming = true;
+  // Compiling takes tens of ms: never in the middle of a scroll.
+  if (!watchingScroll) {
+    watchingScroll = true;
+    window.addEventListener("scroll", () => (lastScroll = performance.now()), { passive: true });
+  }
   const later = (fn: () => void) =>
     typeof window.requestIdleCallback === "function"
       ? window.requestIdleCallback(fn, { timeout: 4000 })
       : window.setTimeout(fn, 1500);
   const step = () => {
-    const slot = inUse + pool.length < MAX_POOLED ? createSlot() : null;
+    if (performance.now() - lastScroll < 1000) return later(step);
+    const slot = inUse + pool.length < WARM ? createSlot() : null;
     if (!slot) {
       warming = false;
       return;
@@ -241,9 +230,15 @@ const fallback = (colors: string[], vignette: number) => {
   return `${vig}radial-gradient(ellipse 70% 60% at 32% 38%, ${b} 0%, transparent 70%), radial-gradient(ellipse 60% 55% at 72% 68%, ${c} 0%, transparent 70%), ${a}`;
 };
 
-export function MeshGradient({ enabled = true, className, ...field }: MeshGradientProps) {
+export function MeshGradient({ enabled = true, active = true, className, ...field }: MeshGradientProps) {
   const box = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState(false);
+  // Last frame as an image, shown whenever the live canvas is not.
+  const [still, setStill] = useState<string | null>(null);
+  // Bumped when the GPU drops a context, for a fresh canvas.
+  const [generation, setGeneration] = useState(0);
+  // Animation time survives remounts, so the field picks up where it stopped.
+  const clock = useRef<number | null>(null);
 
   // Only hold a context while the field is on screen or about to be.
   useEffect(() => {
@@ -259,14 +254,24 @@ export function MeshGradient({ enabled = true, className, ...field }: MeshGradie
       ref={box}
       aria-hidden="true"
       className={className}
-      style={{ position: "absolute", inset: 0, background: fallback(field.colors, field.vignette ?? 0) }}
+      style={{
+        position: "absolute",
+        inset: 0,
+        background: still ? `center / 100% 100% no-repeat url(${still})` : fallback(field.colors, field.vignette ?? 0),
+      }}
     >
-      {near && enabled && <MeshCanvas {...field} />}
+      {near && enabled && active && (
+        <MeshCanvas key={generation} {...field} clock={clock} onStill={setStill} onLost={() => setGeneration((g) => g + 1)} />
+      )}
     </div>
   );
 }
 
-type MeshCanvasProps = Omit<MeshGradientProps, "enabled" | "className">;
+type MeshCanvasProps = Omit<MeshGradientProps, "enabled" | "active" | "className"> & {
+  clock: { current: number | null };
+  onStill: (url: string) => void;
+  onLost: () => void;
+};
 
 /** The live field: a pooled canvas and GPU context, handed back on unmount. */
 function MeshCanvas({
@@ -274,21 +279,15 @@ function MeshCanvas({
   scale = 1.26,
   intensity = 0.35,
   softness = 0.28,
-  warp = 0,
   vignette = 0,
   seed = 1,
   speed = 0.575,
   cursor = false,
-  active = true,
+  clock,
+  onStill,
+  onLost,
 }: MeshCanvasProps) {
   const host = useRef<HTMLDivElement>(null);
-  const activeRef = useRef(active);
-  const wake = useRef<() => void>(() => {});
-
-  useEffect(() => {
-    activeRef.current = active;
-    wake.current();
-  }, [active]);
 
   useEffect(() => {
     const box = host.current;
@@ -298,12 +297,14 @@ function MeshCanvas({
     const { canvas, gl, uScene, uMisc, uMouse } = slot;
     box.appendChild(canvas);
     warmPool();
+    const lost = () => onLost();
+    canvas.addEventListener("webglcontextlost", lost);
 
     const list = colors.slice(0, 6);
     const flat = new Float32Array(18);
     list.forEach((c, i) => flat.set(hexToRgb(c), i * 3));
     gl.uniform3fv(slot.uColors, flat);
-    gl.uniform4f(slot.uShape, scale, intensity, softness, warp);
+    gl.uniform4f(slot.uShape, scale, intensity, softness, 0);
 
     const reduced = prefersReducedMotion();
     const rate = reduced ? 0 : speed;
@@ -315,7 +316,8 @@ function MeshCanvas({
     let boundsStale = true;
     let raf = 0;
     let lastDraw = 0;
-    let elapsed = seed * 7; // different start per instance, no visible jump
+    let elapsed = clock.current ?? seed * 7; // different start per instance
+    let drawn = false;
     let lastNow: number | null = null;
     let inView = true;
     let visible = !document.hidden;
@@ -329,13 +331,14 @@ function MeshCanvas({
     };
 
     const draw = () => {
+      drawn = true;
       gl.uniform4f(uScene, Math.max(1, bounds.width), Math.max(1, bounds.height), elapsed * rate, list.length);
       gl.uniform4f(uMisc, seed, vignette, cursor ? mouse.on : 0, 0.65);
       gl.uniform4f(uMouse, mouse.x, mouse.y, 0.46, 0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
 
-    const running = () => activeRef.current && inView && visible;
+    const running = () => inView && visible;
     const settling = () =>
       Math.abs(target.x - mouse.x) > 0.002 || Math.abs(target.y - mouse.y) > 0.002 || Math.abs(target.on - mouse.on) > 0.002;
 
@@ -362,7 +365,6 @@ function MeshCanvas({
     const kick = () => {
       if (!raf && running()) raf = requestAnimationFrame(frame);
     };
-    wake.current = kick;
 
     const aim = () => {
       if (!last || !inView) return;
@@ -434,7 +436,14 @@ function MeshCanvas({
     kick();
 
     return () => {
-      wake.current = () => {};
+      // Leave the last frame behind as an image (drawn and read in one go, so
+      // the drawing buffer is still valid).
+      clock.current = elapsed;
+      if (drawn && !gl.isContextLost()) {
+        draw();
+        onStill(canvas.toDataURL("image/jpeg", 0.92));
+      }
+      canvas.removeEventListener("webglcontextlost", lost);
       cancelAnimationFrame(raf);
       cancelAnimationFrame(scrollFrame);
       cancelAnimationFrame(reveal);
