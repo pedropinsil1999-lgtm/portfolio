@@ -90,12 +90,12 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
         <div
           key={card.index}
           data-card
-          className="sticky h-[78svh]"
+          className="sticky h-[82svh] md:h-[78svh]"
           style={{ top: `calc(6rem + ${i} * 0.75rem)` }}
         >
           <article
             data-surface={card.tone}
-            className={`group/card relative isolate flex h-full origin-top flex-col overflow-hidden will-change-[transform,filter] rounded-[2rem] p-6 md:p-12 ${tones[card.tone]}`}
+            className={`group/card relative isolate flex h-full origin-top flex-col overflow-hidden will-change-[transform,filter] rounded-[1.75rem] p-5 md:rounded-[2rem] md:p-12 ${tones[card.tone]}`}
           >
             {card.tone === "grafite" && (
               <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -106,14 +106,15 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
                 />
               </div>
             )}
-            <div className="flex items-start justify-between gap-6">
+            {/* Phones: index over a left-aligned line; desktop: side by side. */}
+            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-6">
               <span className="label text-base text-vermelho">{card.index}</span>
-              <p className="max-w-xs text-right text-sm leading-relaxed opacity-70 md:text-base">
+              <p className="max-w-[30ch] text-sm leading-snug opacity-70 md:max-w-xs md:text-right md:text-base md:leading-relaxed">
                 {card.text}
               </p>
             </div>
 
-            <div className="flex min-h-0 flex-1 items-center justify-center py-6 md:justify-end md:pr-[16%]">
+            <div className="flex min-h-0 flex-1 items-center justify-center py-4 md:justify-end md:py-6 md:pr-[16%]">
               {card.preview &&
                 (card.link ? (
                   <Link
@@ -129,9 +130,9 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
                 ))}
             </div>
 
-            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between md:gap-6">
               <div>
-                <h3 className="font-display text-[clamp(2.5rem,7vw,6.5rem)] leading-[0.95]">
+                <h3 className="font-display text-[clamp(1.9rem,8.6vw,6.5rem)] leading-[0.95]">
                   <span data-title-top className="block">
                     {card.title[0]}
                   </span>
@@ -144,11 +145,11 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
                     {card.title[1]}
                   </span>
                 </h3>
-                <ul className="mt-6 flex flex-wrap gap-2 md:mt-8">
+                <ul className="mt-5 flex flex-wrap gap-1.5 md:mt-8 md:gap-2">
                   {card.tags.map((tag) => (
                     <li
                       key={tag}
-                      className="rounded-full border border-current/25 px-4 py-1.5 label text-[0.95rem]"
+                      className="rounded-full border border-current/25 px-3 py-1 label text-[0.8rem] md:px-4 md:py-1.5 md:text-[0.95rem]"
                     >
                       {tag}
                     </li>
@@ -158,7 +159,7 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
               {card.link && (
                 <Link
                   href={card.link.href}
-                  className="group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-6 py-3 label text-[0.95rem] text-preto transition-colors hover:bg-vermelho hover:text-branco md:self-auto"
+                  className="group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-5 py-2.5 label text-[0.9rem] md:px-6 md:py-3 md:text-[0.95rem] text-preto transition-colors hover:bg-vermelho hover:text-branco md:self-auto"
                 >
                   {card.link.label}
                   <HoverArrow />
