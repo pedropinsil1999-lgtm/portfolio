@@ -204,8 +204,11 @@ html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
   z-index: 40;
 }
 
-/* Page transition: the old page sinks and dims, the new one rises over it
-   as a rounded card. --vt-scroll keeps the old snapshot where it was. */
+/* Page transition, a camera move: the old page pulls back (shrinks) and
+   fades into the dark, while the new one comes towards the camera, settling
+   from slightly too close to its normal size. Both scale around the centre of
+   the screen; --vt-scroll keeps the old snapshot where the visitor was.
+   Only transform and opacity animate, so it stays smooth on phones. */
 .site-header {
   view-transition-name: site-header;
 }
@@ -216,29 +219,31 @@ html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
   animation: none;
 }
 ::view-transition-old(.page-swap) {
-  animation: page-out 0.95s var(--ease-cine) both;
+  transform-origin: 50% calc(var(--vt-scroll, 0px) + 50vh);
+  animation: page-out 0.8s var(--ease-cine) both;
 }
 ::view-transition-new(.page-swap) {
-  animation: page-in 0.95s var(--ease-cine) both;
+  transform-origin: 50% 50vh;
+  animation: page-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
 }
 @keyframes page-out {
   from {
-    transform: translateY(calc(-1 * var(--vt-scroll, 0px)));
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px))) scale(1);
     opacity: 1;
   }
   to {
-    transform: translateY(calc(-1 * var(--vt-scroll, 0px) - 10vh)) scale(0.96);
-    opacity: 0.2;
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px))) scale(0.82);
+    opacity: 0;
   }
 }
 @keyframes page-in {
   from {
-    transform: translateY(100vh);
-    clip-path: inset(0 round 2rem 2rem 0 0);
+    transform: scale(1.14);
+    opacity: 0;
   }
   to {
-    transform: translateY(0);
-    clip-path: inset(0 round 0);
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
