@@ -39,11 +39,20 @@ export default function ProofStack({ items }: { items: Art[] }) {
   /** Place every print at the pose of its depth in `next`. */
   const settle = (next: number[], duration: number) => {
     const prints = gsap.utils.toArray<HTMLElement>("[data-proof]", root.current);
+    // On phones the fan is narrower so the outer prints stay on screen.
+    const spread = window.innerWidth < 768 ? 0.6 : 1;
     next.forEach((itemIndex, depth) => {
       const el = prints[itemIndex];
       const p = poses[depth % poses.length];
       gsap.set(el, { zIndex: next.length - depth });
-      gsap.to(el, { xPercent: p.x, yPercent: p.y, rotation: p.r, duration, ease: "expo.out", overwrite: "auto" });
+      gsap.to(el, {
+        xPercent: p.x * spread,
+        yPercent: p.y,
+        rotation: p.r * (0.5 + spread / 2),
+        duration,
+        ease: "expo.out",
+        overwrite: "auto",
+      });
     });
   };
 
@@ -166,7 +175,7 @@ export default function ProofStack({ items }: { items: Art[] }) {
         onClick={onClick}
         aria-label={`${t.work.shuffle}: ${top.title}`}
         data-cursor={t.work.shuffle}
-        className="absolute left-1/2 top-[38%] aspect-[4/5] w-[min(54vw,15rem)] -translate-x-1/2 -translate-y-1/2 outline-none md:left-[64%] md:top-1/2 md:w-[min(26vw,19rem,30svh)] xl:left-[58%] xl:w-[min(22vw,24rem,31svh)]"
+        className="absolute left-1/2 top-[38%] aspect-[4/5] w-[min(50vw,15rem)] -translate-x-1/2 -translate-y-1/2 outline-none md:left-[64%] md:top-1/2 md:w-[min(26vw,19rem,30svh)] xl:left-[58%] xl:w-[min(22vw,24rem,31svh)]"
       >
         {items.map((art, i) => (
           <div key={art.slug} data-proof className="absolute inset-0 will-change-transform">
