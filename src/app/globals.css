@@ -204,9 +204,9 @@ html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
   z-index: 40;
 }
 
-/* Page transition, a camera move: the old page pulls back (shrinks) and
-   fades into the dark, while the new one comes towards the camera, settling
-   from slightly too close to its normal size. Both scale around the centre of
+/* Page transition, a camera move: the old page dissolves while the new one
+   comes towards the camera, settling from slightly too close to its normal
+   size. It scales around the centre of
    the screen; --vt-scroll keeps the old snapshot where the visitor was.
    Only transform and opacity animate, so it stays smooth on phones. */
 .site-header {
@@ -220,24 +220,21 @@ html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
 }
 ::view-transition-old(.page-swap) {
   transform-origin: 50% calc(var(--vt-scroll, 0px) + 50vh);
-  animation: page-out 0.7s cubic-bezier(0.33, 1, 0.68, 1) both;
+  animation: page-out 0.4s ease-out both;
 }
 ::view-transition-new(.page-swap) {
   transform-origin: 50% 50vh;
-  animation: page-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
+  animation: page-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
 }
-/* The outgoing page only pulls back a little and is mostly gone by the time
-   its edges would show, so it never reads as a shrinking rectangle. */
+/* The outgoing page doesn't move at all: it just dissolves quickly, so no
+   part of it is ever seen travelling. The camera move is all in the new page. */
 @keyframes page-out {
-  0% {
-    transform: translateY(calc(-1 * var(--vt-scroll, 0px))) scale(1);
+  from {
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px)));
     opacity: 1;
   }
-  40% {
-    opacity: 0.25;
-  }
-  100% {
-    transform: translateY(calc(-1 * var(--vt-scroll, 0px))) scale(0.93);
+  to {
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px)));
     opacity: 0;
   }
 }
