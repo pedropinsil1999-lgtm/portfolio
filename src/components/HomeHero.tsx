@@ -112,12 +112,6 @@ export default function HomeHero() {
         data-hero-bg
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        // Both edges dissolve into the page colour: no edge at rest, and the top
-        // meets the iPhone status bar (tinted with the page colour) seamlessly.
-        style={{
-          maskImage: "linear-gradient(to bottom, transparent 0%, #000 16%, #000 50%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, #000 16%, #000 50%, transparent 100%)",
-        }}
       >
         <div data-hero-bg-inner className="absolute inset-0 origin-top will-change-transform">
           <MeshGradient {...NOITE} seed={3} active={bgActive} />
@@ -126,13 +120,24 @@ export default function HomeHero() {
             style={{ backgroundImage: `url("${GRAIN}")`, backgroundSize: "160px 160px" }}
           />
         </div>
+        {/* Both edges dissolve into the page colour: no edge at rest, and the top
+            meets the iPhone status bar (tinted with the page colour) seamlessly.
+            A colour fade on top, not a mask: a mask over the moving field would
+            cost an extra full-screen GPU pass every frame. */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to bottom, var(--page-bg) 0%, transparent 16%, transparent 50%, var(--page-bg) 100%)",
+          }}
+        />
       </div>
       <section
         ref={root}
         data-theme="preto"
         className="relative flex min-h-svh flex-col overflow-x-clip justify-end px-6 pb-10 pt-32 md:px-12 md:pb-12"
       >
-        <HeroMegaphone src="/hero/megafone.webp" />
+        <HeroMegaphone />
 
         {/* On phones the kicker leads, above the megaphone. */}
         <div className="-order-1 mb-6 overflow-hidden md:order-none md:mb-0">

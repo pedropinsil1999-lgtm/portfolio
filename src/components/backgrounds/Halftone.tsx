@@ -286,14 +286,14 @@ export default function Halftone() {
   }, []);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 h-full w-full"
-      // Dissolve into the frame edges so the section never ends in a hard cut.
-      style={{
-        maskImage: "radial-gradient(ellipse 85% 80% at 60% 40%, #000 35%, transparent 100%)",
-        WebkitMaskImage: "radial-gradient(ellipse 85% 80% at 60% 40%, #000 35%, transparent 100%)",
-      }}
-    />
+    <>
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+      {/* Dissolve into the frame edges so the section never ends in a hard cut
+          (a colour fade on top: cheaper than masking the canvas). */}
+      <div
+        className="absolute inset-0"
+        style={{ background: "radial-gradient(ellipse 85% 80% at 60% 40%, transparent 35%, var(--page-bg) 100%)" }}
+      />
+    </>
   );
 }

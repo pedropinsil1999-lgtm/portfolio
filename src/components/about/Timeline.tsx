@@ -178,7 +178,7 @@ export default function Timeline() {
             <p className="mt-1 text-sm text-branco/60">{m.text}</p>
             {i === 5 && (
               <p className="mt-4 flex items-center gap-3 label text-[0.95rem] text-vermelho">
-                <span className="now-pulse -ml-[30px] h-3 w-3 rounded-full bg-vermelho" />
+                <span className="now-pulse relative -ml-[30px] h-3 w-3 rounded-full bg-vermelho" />
                 {t.about.now}
               </p>
             )}

@@ -140,7 +140,7 @@ function Viewer({
   }, [go, onClose]);
 
   const pill =
-    "flex h-11 items-center justify-center rounded-full bg-branco/10 px-5 label text-[0.95rem] text-branco backdrop-blur-md transition-colors hover:bg-branco/20";
+    "flex h-11 items-center justify-center rounded-full bg-branco/10 px-5 label text-[0.95rem] text-branco transition-colors hover:bg-branco/20";
 
   return (
     <div
@@ -148,8 +148,10 @@ function Viewer({
       aria-modal="true"
       aria-label={art.title}
       // Scrolls as a column on phones (piece, then its text); fixed frame on desktop.
+      // A near-solid ground, no backdrop blur: blurring the whole (animated) page
+      // behind it every frame is what made opening a piece stutter on phones.
       data-lenis-prevent
-      className="viewer fixed inset-0 z-[150] flex flex-col overflow-y-auto bg-preto/92 px-4 py-4 backdrop-blur-xl md:px-12 md:py-6 lg:overflow-hidden"
+      className="viewer fixed inset-0 z-[150] flex flex-col overflow-y-auto bg-preto/[0.97] px-4 py-4 md:px-12 md:py-6 lg:overflow-hidden"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="flex items-center justify-between">

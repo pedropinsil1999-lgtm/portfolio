@@ -5,23 +5,26 @@
 // (https://shaders.paper.design/mesh-gradient, Apache-2.0).
 //
 // Trimmed for the portfolio, where several of these sit in a stack of cards:
-// - The field is soft, so it renders into a tiny buffer (PIXEL_BUDGET) that
-//   CSS stretches to fit: a fraction of the GPU work of full resolution.
+// - The field is soft, so it renders into a tiny buffer that CSS stretches
+//   to fit: a fraction of the GPU work of full resolution. The buffer has a
+//   fixed size (the shader is told the element's proportions instead), since
+//   resizing a GPU canvas stalls the page for a few ms.
 // - It draws at most FPS frames a second; the motion is slow anyway.
 // - It only animates while `active`, on screen and with the tab visible, and
 //   only holds a GPU context while near the viewport (and `enabled`); the rest
 //   of the time a static CSS look-alike stands in. A page full of these keeps
-//   one or two live contexts instead of one per instance.
+//   one or two live contexts instead of one per instance, and contexts are
+//   pooled: a page swap reuses them instead of compiling the shader again.
 // - Grain, blur, OKLab and colour grading were removed from the shader; grain
 //   comes from a static CSS layer instead (the caller adds it).
 
 import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
 
-const PIXEL_BUDGET = 90_000; // ~ 380×240: plenty for a blurry field
+const BUFFER = { w: 368, h: 230 }; // ~85k pixels: plenty for a blurry field
 const FPS = 30;
 // Phones and tablets have far weaker GPUs: fewer pixels and frames there.
-const TOUCH_PIXEL_BUDGET = 50_000;
+const TOUCH_BUFFER = { w: 280, h: 176 };
 const TOUCH_FPS = 24;
 
 const VERT = `attribute vec2 a_position;
@@ -29,7 +32,8 @@ void main() { gl_Position = vec4(a_position, 0.0, 1.0); }`;
 
 const FRAG = `precision mediump float;
 uniform vec3 u_colors[6];
-uniform vec4 u_scene;   // resolution.xy, time, colour count
+uniform vec2 u_buffer;  // drawing buffer size
+uniform vec4 u_scene;   // element size (for its proportions), time, colour count
 uniform vec4 u_shape;   // scale, intensity, softness, warp
 uniform vec4 u_misc;    // seed, vignette, cursor presence, cursor strength
 uniform vec4 u_mouse;   // cursor.xy (-1..1), cursor radius, -
@@ -57,8 +61,8 @@ float fbm(vec2 p) {
 void main() {
   vec2 res = u_scene.xy;
   float t = u_scene.z;
-  vec2 uv = gl_FragCoord.xy / res;
-  vec2 p = (gl_FragCoord.xy - 0.5 * res) / min(res.x, res.y);
+  vec2 uv = gl_FragCoord.xy / u_buffer;
+  vec2 p = (uv - 0.5) * res / min(res.x, res.y);
 
   // Cursor swirl: the field twists gently around the pointer.
   if (u_misc.z > 0.001) {
@@ -127,9 +131,108 @@ const hexToRgb = (hex: string) => {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
 };
 
-// Contexts are released a moment after unmount, so an immediate remount on
-// the same element (React's dev double-mount) takes the live context back.
-const pendingRelease = new WeakMap<HTMLCanvasElement, number>();
+// GPU contexts are pooled. Creating one and compiling the shader is the most
+// expensive thing a page swap did (and far worse on phones), so a field that
+// unmounts hands its canvas, context and compiled program back to the pool, and
+// the next field to mount (often on the very next page) just takes it over.
+type Slot = {
+  canvas: HTMLCanvasElement;
+  gl: WebGLRenderingContext;
+  uColors: WebGLUniformLocation | null;
+  uShape: WebGLUniformLocation | null;
+  uScene: WebGLUniformLocation | null;
+  uMisc: WebGLUniformLocation | null;
+  uMouse: WebGLUniformLocation | null;
+  lost: boolean;
+};
+const pool: Slot[] = [];
+const MAX_POOLED = 3;
+let inUse = 0;
+
+function createSlot(): Slot | null {
+  const canvas = document.createElement("canvas");
+  const size = window.matchMedia("(pointer: coarse)").matches ? TOUCH_BUFFER : BUFFER;
+  canvas.width = size.w;
+  canvas.height = size.h;
+  canvas.style.cssText = "display:block;width:100%;height:100%;opacity:0;transition:opacity 0.6s ease";
+  const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
+  if (!gl) return null;
+  const compile = (type: number, src: string) => {
+    const sh = gl.createShader(type)!;
+    gl.shaderSource(sh, src);
+    gl.compileShader(sh);
+    return sh;
+  };
+  const program = gl.createProgram()!;
+  const vs = compile(gl.VERTEX_SHADER, VERT);
+  const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
+  gl.linkProgram(program);
+  gl.deleteShader(vs);
+  gl.deleteShader(fs);
+  gl.useProgram(program);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(program, "a_position");
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  gl.viewport(0, 0, size.w, size.h);
+  const u = (name: string) => gl.getUniformLocation(program, name);
+  gl.uniform2f(u("u_buffer"), size.w, size.h);
+  const slot: Slot = {
+    canvas,
+    gl,
+    uColors: u("u_colors"),
+    uShape: u("u_shape"),
+    uScene: u("u_scene"),
+    uMisc: u("u_misc"),
+    uMouse: u("u_mouse"),
+    lost: false,
+  };
+  canvas.addEventListener("webglcontextlost", () => (slot.lost = true));
+  return slot;
+}
+
+function acquireSlot(): Slot | null {
+  let slot: Slot | null = null;
+  for (let s = pool.pop(); s && !slot; s = pool.pop()) if (!s.lost && !s.gl.isContextLost()) slot = s;
+  slot ??= createSlot();
+  if (slot) inUse++;
+  return slot;
+}
+
+function releaseSlot(slot: Slot) {
+  inUse--;
+  slot.canvas.remove();
+  slot.canvas.style.opacity = "0";
+  if (slot.lost || slot.gl.isContextLost()) return;
+  if (pool.length < MAX_POOLED) pool.push(slot);
+  else slot.gl.getExtension("WEBGL_lose_context")?.loseContext();
+}
+
+// The first fields to scroll into view would otherwise compile their shader
+// mid-scroll (a visible hitch on phones). Once a page uses fields, spare
+// slots are prepared one by one whenever the browser is idle.
+let warming = false;
+function warmPool() {
+  if (warming) return;
+  warming = true;
+  const later = (fn: () => void) =>
+    typeof window.requestIdleCallback === "function"
+      ? window.requestIdleCallback(fn, { timeout: 4000 })
+      : window.setTimeout(fn, 1500);
+  const step = () => {
+    const slot = inUse + pool.length < MAX_POOLED ? createSlot() : null;
+    if (!slot) {
+      warming = false;
+      return;
+    }
+    pool.push(slot);
+    later(step);
+  };
+  later(step);
+}
 
 /** Static look-alike of the field, shown before the canvas and when it is dropped. */
 const fallback = (colors: string[], vignette: number) => {
@@ -141,9 +244,6 @@ const fallback = (colors: string[], vignette: number) => {
 export function MeshGradient({ enabled = true, className, ...field }: MeshGradientProps) {
   const box = useRef<HTMLDivElement>(null);
   const [near, setNear] = useState(false);
-  // A fresh <canvas> per GPU context: a context that was released (or lost)
-  // can never be revived on the same element, so the element is swapped.
-  const [generation, setGeneration] = useState(0);
 
   // Only hold a context while the field is on screen or about to be.
   useEffect(() => {
@@ -161,14 +261,14 @@ export function MeshGradient({ enabled = true, className, ...field }: MeshGradie
       className={className}
       style={{ position: "absolute", inset: 0, background: fallback(field.colors, field.vignette ?? 0) }}
     >
-      {near && enabled && <MeshCanvas key={generation} {...field} onLost={() => setGeneration((g) => g + 1)} />}
+      {near && enabled && <MeshCanvas {...field} />}
     </div>
   );
 }
 
-type MeshCanvasProps = Omit<MeshGradientProps, "enabled" | "className"> & { onLost: () => void };
+type MeshCanvasProps = Omit<MeshGradientProps, "enabled" | "className">;
 
-/** The live field: one canvas, one GPU context, released on unmount. */
+/** The live field: a pooled canvas and GPU context, handed back on unmount. */
 function MeshCanvas({
   colors,
   scale = 1.26,
@@ -180,9 +280,8 @@ function MeshCanvas({
   speed = 0.575,
   cursor = false,
   active = true,
-  onLost,
 }: MeshCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const host = useRef<HTMLDivElement>(null);
   const activeRef = useRef(active);
   const wake = useRef<() => void>(() => {});
 
@@ -192,61 +291,28 @@ function MeshCanvas({
   }, [active]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    window.clearTimeout(pendingRelease.get(canvas));
-    pendingRelease.delete(canvas);
-    const gl = canvas.getContext("webgl", { antialias: false, alpha: false, powerPreference: "low-power" });
-    if (!gl) return;
-    if (gl.isContextLost()) {
-      // This element's context was released (a hidden route shown again):
-      // ask for a fresh canvas.
-      onLost();
-      return;
-    }
+    const box = host.current;
+    if (!box) return;
+    const slot = acquireSlot();
+    if (!slot) return;
+    const { canvas, gl, uScene, uMisc, uMouse } = slot;
+    box.appendChild(canvas);
+    warmPool();
 
-    const compile = (type: number, src: string) => {
-      const s = gl.createShader(type)!;
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      return s;
-    };
-    const program = gl.createProgram()!;
-    const vs = compile(gl.VERTEX_SHADER, VERT);
-    const fs = compile(gl.FRAGMENT_SHADER, FRAG);
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    gl.deleteShader(vs);
-    gl.deleteShader(fs);
-    gl.useProgram(program);
-
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(program, "a_position");
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-
-    const u = (name: string) => gl.getUniformLocation(program, name);
-    const uScene = u("u_scene");
-    const uMisc = u("u_misc");
-    const uMouse = u("u_mouse");
     const list = colors.slice(0, 6);
     const flat = new Float32Array(18);
     list.forEach((c, i) => flat.set(hexToRgb(c), i * 3));
-    gl.uniform3fv(u("u_colors"), flat);
-    gl.uniform4f(u("u_shape"), scale, intensity, softness, warp);
+    gl.uniform3fv(slot.uColors, flat);
+    gl.uniform4f(slot.uShape, scale, intensity, softness, warp);
 
     const reduced = prefersReducedMotion();
     const rate = reduced ? 0 : speed;
-    const touch = window.matchMedia("(pointer: coarse)").matches;
-    const budget = touch ? TOUCH_PIXEL_BUDGET : PIXEL_BUDGET;
-    const fps = touch ? TOUCH_FPS : FPS;
+    const fps = window.matchMedia("(pointer: coarse)").matches ? TOUCH_FPS : FPS;
     // Bounds are cached and only re-read once per frame after a scroll, never
     // on every pointer event (reading layout per event is what makes pages stutter).
-    let bounds = canvas.getBoundingClientRect();
-    let boundsStale = false;
+    // The first read waits for the ResizeObserver, when layout is already done.
+    let bounds = new DOMRect();
+    let boundsStale = true;
     let raf = 0;
     let lastDraw = 0;
     let elapsed = seed * 7; // different start per instance, no visible jump
@@ -259,19 +325,11 @@ function MeshCanvas({
 
     const resize = () => {
       bounds = canvas.getBoundingClientRect();
-      const area = Math.max(1, bounds.width * bounds.height);
-      const k = Math.min(1, Math.sqrt(budget / area));
-      const w = Math.max(1, Math.round(bounds.width * k));
-      const h = Math.max(1, Math.round(bounds.height * k));
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-        gl.viewport(0, 0, w, h);
-      }
+      boundsStale = false;
     };
 
     const draw = () => {
-      gl.uniform4f(uScene, canvas.width, canvas.height, elapsed * rate, list.length);
+      gl.uniform4f(uScene, Math.max(1, bounds.width), Math.max(1, bounds.height), elapsed * rate, list.length);
       gl.uniform4f(uMisc, seed, vignette, cursor ? mouse.on : 0, 0.65);
       gl.uniform4f(uMouse, mouse.x, mouse.y, 0.46, 0);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -352,9 +410,13 @@ function MeshCanvas({
       document.documentElement.addEventListener("pointerleave", onLeave);
     }
 
+    // Sized and drawn once layout is ready (no forced layout while the page
+    // is being swapped in), then faded in over the static look-alike.
+    let reveal = 0;
     const ro = new ResizeObserver(() => {
       resize();
       draw();
+      if (!reveal) reveal = requestAnimationFrame(() => (canvas.style.opacity = "1"));
     });
     ro.observe(canvas);
     const io = new IntersectionObserver(([entry]) => {
@@ -369,40 +431,24 @@ function MeshCanvas({
     };
     document.addEventListener("visibilitychange", onVisibility);
 
-    resize();
-    draw();
-    canvas.style.opacity = "1";
     kick();
 
     return () => {
       wake.current = () => {};
       cancelAnimationFrame(raf);
       cancelAnimationFrame(scrollFrame);
+      cancelAnimationFrame(reveal);
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("scroll", onScroll);
       document.documentElement.removeEventListener("pointerleave", onLeave);
-      gl.deleteBuffer(buf);
-      gl.deleteProgram(program);
-      // Free the GPU context (deferred, see pendingRelease). If the element
-      // comes back later (a hidden route shown again), the lost context is
-      // noticed and a fresh canvas is made.
-      const timer = window.setTimeout(() => {
-        pendingRelease.delete(canvas);
-        gl.getExtension("WEBGL_lose_context")?.loseContext();
-      }, 0);
-      pendingRelease.set(canvas, timer);
+      releaseSlot(slot);
     };
     // Colours and shape are fixed per mount; remount to change them.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ display: "block", width: "100%", height: "100%", opacity: 0, transition: "opacity 0.6s ease" }}
-    />
-  );
+  return <div ref={host} style={{ position: "absolute", inset: 0 }} />;
 }

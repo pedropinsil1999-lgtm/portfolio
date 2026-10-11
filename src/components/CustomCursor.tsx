@@ -64,12 +64,15 @@ export default function CustomCursor() {
     };
 
     // Scrolling moves content under a still pointer; keep the label in sync.
-    let scrollFrame = 0;
+    // A hit test needs fresh layout, so it runs a few times a second rather
+    // than on every scroll frame.
+    let scrollTimer = 0;
     const onScroll = () => {
-      cancelAnimationFrame(scrollFrame);
-      scrollFrame = requestAnimationFrame(() =>
-        readTarget(document.elementFromPoint(last.x, last.y)),
-      );
+      if (scrollTimer) return;
+      scrollTimer = window.setTimeout(() => {
+        scrollTimer = 0;
+        readTarget(document.elementFromPoint(last.x, last.y));
+      }, 100);
     };
 
     window.addEventListener("pointermove", onMove, { passive: true });
@@ -80,7 +83,7 @@ export default function CustomCursor() {
 
     return () => {
       html.classList.remove("has-custom-cursor");
-      cancelAnimationFrame(scrollFrame);
+      window.clearTimeout(scrollTimer);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointerdown", onDown);

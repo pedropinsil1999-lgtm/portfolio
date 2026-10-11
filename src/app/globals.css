@@ -163,21 +163,6 @@ html[data-intro="resume"] {
   from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
 }
 
-/* Hero megaphone: its sound waves pulse outward, one after the other. */
-.mega-waves path {
-  animation: mega-wave 2.4s ease-in-out infinite;
-}
-.mega-waves path:nth-child(2) {
-  animation-delay: 0.3s;
-}
-@keyframes mega-wave {
-  0%, 100% { opacity: 0.15; }
-  40% { opacity: 0.9; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .mega-waves path { animation: none; opacity: 0.6; }
-}
-
 /* Film grain (Trabalhos, audiovisual): the noise layer hops between offsets
    a few times a second, like grain changing frame to frame. */
 .film-grain {
@@ -197,13 +182,23 @@ html[data-intro="resume"] {
 }
 
 /* "Now" marker on the about timeline. */
-.now-pulse {
-  box-shadow: 0 0 0 0 rgb(114 152 175 / 0.6);
+/* A disc swelling out of the dot: transform and opacity only, so it runs on
+   the compositor (an animated box-shadow repaints every frame). The dot must
+   be positioned. */
+.now-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: rgb(114 152 175 / 0.6);
   animation: now-pulse 2s ease-out infinite;
 }
 @keyframes now-pulse {
-  70% { box-shadow: 0 0 0 12px rgb(114 152 175 / 0); }
-  100% { box-shadow: 0 0 0 0 rgb(114 152 175 / 0); }
+  70%,
+  100% {
+    transform: scale(2.7);
+    opacity: 0;
+  }
 }
 
 /* Reel placeholder: a playhead that keeps running. */
@@ -226,7 +221,7 @@ html[data-intro="resume"] {
   from { opacity: 0; }
 }
 @keyframes viewer-image-in {
-  from { opacity: 0; transform: scale(0.97); filter: blur(6px); }
+  from { opacity: 0; transform: scale(0.97); }
 }
 
 /* Custom cursor: hide the native one only where ours is active, but keep
@@ -298,10 +293,22 @@ html.viewer-open .site-header {
 }
 @keyframes page-out-dim {
   from {
-    filter: brightness(1) blur(0);
+    filter: brightness(1);
   }
   to {
-    filter: brightness(0.5) blur(16px);
+    filter: brightness(0.5);
+  }
+}
+/* With a mouse (desktop GPUs) the outgoing page also goes out of focus; on
+   touch screens a full-screen animated blur is too heavy, so it only dims. */
+@media (hover: hover) and (pointer: fine) {
+  @keyframes page-out-dim {
+    from {
+      filter: brightness(1) blur(0);
+    }
+    to {
+      filter: brightness(0.5) blur(16px);
+    }
   }
 }
 @keyframes page-in {

@@ -4,7 +4,10 @@ import { useRef, type ReactNode } from "react";
 import { useHeroReveal } from "@/lib/useHeroReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
-const TOP_FADE = "linear-gradient(to bottom, transparent, #000 16%)";
+// Top fades into the page colour, which also tints the iPhone status bar. A
+// colour fade on top, not a mask (a mask over a moving background costs an
+// extra GPU pass every frame).
+const TOP_FADE = "linear-gradient(to bottom, var(--page-bg), transparent 16%)";
 
 /**
  * Opening frame of the inner pages: title at the bottom, the space above it
@@ -35,10 +38,9 @@ export default function PageHero({
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
-          // Top fades into the page colour, which also tints the iPhone status bar.
-          style={{ maskImage: TOP_FADE, WebkitMaskImage: TOP_FADE }}
         >
           {background}
+          <div className="absolute inset-0" style={{ background: TOP_FADE }} />
         </div>
       )}
       <div className="relative flex min-h-[38svh] flex-1 items-center">{children}</div>

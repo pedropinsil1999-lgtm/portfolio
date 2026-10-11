@@ -32,10 +32,5 @@ export function scriptSettle(el: Element | null, done: boolean) {
   }
 }
 
-/** For scroll-scrubbed blur: at rest (no blur) remove the filter entirely. */
-export function filterAtRest(el: Element | null, atRest: boolean) {
-  if (atRest && el instanceof HTMLElement) el.style.filter = "none";
-}
-
 /** Soft glow behind the script in the palette's light blue. */
 export const scriptGlow = "[text-shadow:0_0_0.4em_rgb(194_232_255_/_0.28)]";

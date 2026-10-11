@@ -8,7 +8,6 @@ import CardBackdrop from "@/components/ui/CardBackdrop";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
 import {
-  filterAtRest,
   scriptGlow,
   scriptHidden,
   scriptRevealStyle,
@@ -71,23 +70,19 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
         const rest = { trigger: next, endTrigger: document.documentElement, end: "bottom top" };
         ScrollTrigger.create({ ...rest, start: "top 90%", onToggle: (self) => flag(setPaused, i, self.isActive) });
         ScrollTrigger.create({ ...rest, start: "top 20%", onToggle: (self) => flag(setCovered, i, self.isActive) });
-        // Rack focus: the card behind drifts slightly out of focus, not darker.
-        const card = wrapper.firstElementChild;
+        // The card behind recedes a little as the next one covers it. Scale
+        // only: a scroll-driven blur here meant a full-card GPU blur on every
+        // frame, for a card that is almost entirely covered anyway.
         gsap.fromTo(
-          card,
-          { scale: 1, filter: "blur(0px)" },
+          wrapper.firstElementChild,
+          { scale: 1 },
           {
             scale: 0.94,
-            filter: "blur(3px)",
             ease: "none",
             // Finishes as the next card settles into its sticky slot.
             scrollTrigger: { trigger: next, start: "top 90%", end: "top 20%", scrub: true },
-            onUpdate() {
-              filterAtRest(card, this.progress() === 0);
-            },
           },
         );
-        filterAtRest(card, true);
       });
     },
     { scope: ref },

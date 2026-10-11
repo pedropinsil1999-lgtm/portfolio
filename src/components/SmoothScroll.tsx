@@ -25,11 +25,14 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
   const pathname = usePathname();
 
   useEffect(() => {
-    const html = document.documentElement;
-
     // Freeze the scroll offset when a navigation starts, so the outgoing
-    // page snapshot stays where the visitor was looking.
-    const markScroll = () => html.style.setProperty("--vt-scroll", `${window.scrollY}px`);
+    // page snapshot stays where the visitor was looking. Written into a rule
+    // for the snapshot alone: a custom property set on <html> would restyle
+    // every element of the page right as the visitor clicks.
+    const offset = document.createElement("style");
+    document.head.appendChild(offset);
+    const markScroll = () =>
+      (offset.textContent = `::view-transition-old(.page-swap){--vt-scroll:${window.scrollY}px}`);
     const onClick = (e: MouseEvent) => {
       if ((e.target as Element).closest?.('a[href^="/"]')) markScroll();
     };
@@ -57,6 +60,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     }
 
     return () => {
+      offset.remove();
       document.removeEventListener("click", onClick, true);
       window.removeEventListener("popstate", markScroll);
       cleanupLenis();

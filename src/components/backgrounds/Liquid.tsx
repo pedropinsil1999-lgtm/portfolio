@@ -11,9 +11,10 @@ import { prefersReducedMotion } from "@/lib/motion";
  * the palette, so the dark navy title stays readable on top.
  * It fades in on the same scroll range as the page colour (see ScrollTheme),
  * so the navy dissolves into the liquid instead of meeting it at an edge.
- * The shader only exists while the section is near the viewport (a static
- * look-alike stands in otherwise), so it holds no GPU context elsewhere on
- * the page. Frozen for reduced motion.
+ * Compiling the shader is a hitch, so it is done once the page is idle (or
+ * as soon as the section gets near) and then kept: it pauses by itself while
+ * off screen, and a static look-alike stands in until it exists. Frozen for
+ * reduced motion.
  */
 export default function Liquid() {
   const ref = useRef<HTMLDivElement>(null);
@@ -25,15 +26,23 @@ export default function Liquid() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        setTouch(window.matchMedia("(pointer: coarse)").matches);
-        setNear(entry.isIntersecting);
-      },
-      { rootMargin: "50% 0px" },
-    );
+    const mount = () => {
+      setTouch(window.matchMedia("(pointer: coarse)").matches);
+      setNear(true);
+    };
+    const io = new IntersectionObserver(([entry]) => entry.isIntersecting && mount(), { rootMargin: "100% 0px" });
     io.observe(el);
-    return () => io.disconnect();
+    // Otherwise warm it up in a quiet moment, well after the page has settled.
+    let idle = 0;
+    const timer = window.setTimeout(() => {
+      idle = window.requestIdleCallback?.(mount, { timeout: 3000 }) ?? window.setTimeout(mount, 0);
+    }, 3000);
+    return () => {
+      io.disconnect();
+      window.clearTimeout(timer);
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+    };
   }, []);
 
   useGSAP(
@@ -59,10 +68,7 @@ export default function Liquid() {
     <div
       ref={ref}
       className="absolute inset-0"
-      // Soft top and bottom so the section has no edges.
       style={{
-        maskImage: "linear-gradient(to bottom, transparent, #000 22%, #000 72%, transparent)",
-        WebkitMaskImage: "linear-gradient(to bottom, transparent, #000 22%, #000 72%, transparent)",
         background:
           "radial-gradient(ellipse 60% 45% at 30% 35%, #c2e8ff 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 72% 60%, rgb(114 152 175 / 0.45) 0%, transparent 70%), #eaffff",
       }}
@@ -95,6 +101,13 @@ export default function Liquid() {
           background:
             "radial-gradient(ellipse 62% 46% at 50% 52%, rgb(234 255 255 / 0.92) 0%, rgb(234 255 255 / 0.7) 45%, rgb(234 255 255 / 0) 100%)",
         }}
+      />
+      {/* Soft top and bottom so the section has no edges: a fade to the page
+          colour on top (a mask over the moving liquid would cost an extra GPU
+          pass every frame). */}
+      <div
+        className="absolute inset-0"
+        style={{ background: "linear-gradient(to bottom, var(--page-bg), transparent 22%, transparent 72%, var(--page-bg))" }}
       />
     </div>
   );
