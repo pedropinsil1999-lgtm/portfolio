@@ -220,19 +220,24 @@ html.has-custom-cursor :is(input, textarea, select, [contenteditable="true"]) {
 }
 ::view-transition-old(.page-swap) {
   transform-origin: 50% calc(var(--vt-scroll, 0px) + 50vh);
-  animation: page-out 0.8s var(--ease-cine) both;
+  animation: page-out 0.7s cubic-bezier(0.33, 1, 0.68, 1) both;
 }
 ::view-transition-new(.page-swap) {
   transform-origin: 50% 50vh;
   animation: page-in 1s cubic-bezier(0.22, 1, 0.36, 1) 0.18s both;
 }
+/* The outgoing page only pulls back a little and is mostly gone by the time
+   its edges would show, so it never reads as a shrinking rectangle. */
 @keyframes page-out {
-  from {
+  0% {
     transform: translateY(calc(-1 * var(--vt-scroll, 0px))) scale(1);
     opacity: 1;
   }
-  to {
-    transform: translateY(calc(-1 * var(--vt-scroll, 0px))) scale(0.82);
+  40% {
+    opacity: 0.25;
+  }
+  100% {
+    transform: translateY(calc(-1 * var(--vt-scroll, 0px))) scale(0.93);
     opacity: 0;
   }
 }
