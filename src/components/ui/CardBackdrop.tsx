@@ -4,7 +4,7 @@ import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { GRAIN } from "@/lib/grain";
 
 // Card background: a dark mesh gradient ("Noite") that twists around the cursor.
-const MESH = {
+export const NOITE = {
   colors: ["#021a29", "#042a41", "#004671", "#365c73"],
   intensity: 0.45,
   softness: 0.35,
@@ -19,7 +19,7 @@ const MESH = {
 export default function CardBackdrop({ seed = 1, active = true }: { seed?: number; active?: boolean }) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-      <MeshGradient {...MESH} seed={seed} active={active} />
+      <MeshGradient {...NOITE} seed={seed} active={active} />
       {/* Fine grain dithers the gradient so it never bands. */}
       <div
         className="absolute inset-0 opacity-[0.07]"

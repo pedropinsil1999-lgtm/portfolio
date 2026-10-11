@@ -4,7 +4,9 @@ import { useRef } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion, whenIntroDone } from "@/lib/motion";
 import { scriptGlow, scriptHidden, scriptRevealStyle, scriptShown } from "@/lib/scriptReveal";
-import KineticGrid from "@/components/ui/kinetic-grid";
+import { NOITE } from "@/components/ui/CardBackdrop";
+import { MeshGradient } from "@/components/ui/mesh-gradient";
+import { GRAIN } from "@/lib/grain";
 import HeroMegaphone from "@/components/HeroMegaphone";
 import { useHeroReveal } from "@/lib/useHeroReveal";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -36,8 +38,51 @@ export default function HomeHero() {
     { scope: root },
   );
 
+  // Background: fades in with the page, and as the hero scrolls away it
+  // drifts down, swells a touch and dissolves, so the next section rises out
+  // of the plain page colour with no seam.
+  const stage = useRef<HTMLDivElement>(null);
+  useGSAP(
+    (_, contextSafe) => {
+      if (prefersReducedMotion()) return;
+      gsap.set("[data-hero-bg]", { autoAlpha: 0 });
+      const show = contextSafe!(() => gsap.to("[data-hero-bg]", { autoAlpha: 1, duration: 1.6, ease: "power2.out" }));
+      gsap.fromTo(
+        "[data-hero-bg-inner]",
+        { opacity: 1, scale: 1, yPercent: 0 },
+        {
+          opacity: 0,
+          scale: 1.08,
+          yPercent: 12,
+          ease: "power1.in",
+          scrollTrigger: { trigger: stage.current, start: "top top", end: "bottom 15%", scrub: true },
+        },
+      );
+      return whenIntroDone(show);
+    },
+    { scope: stage },
+  );
+
   return (
-    <KineticGrid>
+    <div ref={stage} className="relative overflow-x-clip">
+      <div
+        data-hero-bg
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        // Bottom dissolves into the page colour, so even at rest there is no edge.
+        style={{
+          maskImage: "linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%)",
+        }}
+      >
+        <div data-hero-bg-inner className="absolute inset-0 origin-top will-change-transform">
+          <MeshGradient {...NOITE} seed={3} />
+          <div
+            className="absolute inset-0 opacity-[0.07]"
+            style={{ backgroundImage: `url("${GRAIN}")`, backgroundSize: "160px 160px" }}
+          />
+        </div>
+      </div>
       <section
         ref={root}
         data-theme="preto"
@@ -81,6 +126,6 @@ export default function HomeHero() {
           </div>
         </div>
       </section>
-    </KineticGrid>
+    </div>
   );
 }
