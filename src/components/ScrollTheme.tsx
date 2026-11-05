@@ -5,9 +5,11 @@ import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 const themes = {
   // pill: header pills; on light sections they take the text colour.
-  preto: { bg: "#042a41", fg: "#eaffff", pill: "#004671" },
-  grafite: { bg: "#004671", fg: "#eaffff", pill: "#004671" },
-  branco: { bg: "#eaffff", fg: "#042a41", pill: "#042a41" },
+  // Names are roles from the first palette: "preto" is the base page (mint
+  // now), "branco" the contrasting closing section (indigo now).
+  preto: { bg: "#aaf2cf", fg: "#1c1464", pill: "#1c1464" },
+  grafite: { bg: "#231a78", fg: "#f4fcfa", pill: "#3a30a0" },
+  branco: { bg: "#1c1464", fg: "#f4fcfa", pill: "#3a30a0" },
 };
 type ThemeName = keyof typeof themes;
 type Theme = (typeof themes)[ThemeName];

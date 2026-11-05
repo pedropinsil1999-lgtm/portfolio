@@ -12,7 +12,7 @@ const PUSH = 10; // how far dots move away from the cursor (px)
 const RING_SPEED = 620; // click ripple speed (px/s)
 const RING_WIDTH = 70; // ripple thickness (px)
 const RING_LIFE = 1.5; // ripple lifetime (s)
-const INK = "194,232,255"; // light blue hairline colour of the palette
+const INK = "28,20,100"; // the indigo ink of the palette
 const BASE_ALPHA = 0.1;
 
 type Ripple = { x: number; y: number; t0: number };

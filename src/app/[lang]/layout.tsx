@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
 import { notFound } from "next/navigation";
-import { Dela_Gothic_One, Dosis, Great_Vibes, Inter } from "next/font/google";
+import { Dela_Gothic_One, Instrument_Serif, Inter } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Intro from "@/components/Intro";
@@ -21,21 +21,18 @@ const delaGothic = Dela_Gothic_One({
   subsets: ["latin"],
 });
 
-const dosis = Dosis({
-  variable: "--font-dosis",
-  subsets: ["latin"],
-});
-
 // Small labels, menu, counters and meta text (see .label).
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-// Script accent: the handwritten "próximo passo" in the home statement.
-const greatVibes = Great_Vibes({
-  variable: "--font-great-vibes",
+// Italic accents (the condensed serif of the identity): the second word of
+// the hero name and of the card titles, and the "próximo passo" highlight.
+const instrument = Instrument_Serif({
+  variable: "--font-instrument",
   weight: "400",
+  style: ["italic", "normal"],
   subsets: ["latin"],
 });
 
@@ -63,7 +60,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
     <html
       lang={lang === "pt" ? "pt-BR" : "en"}
       suppressHydrationWarning
-      className={`${delaGothic.variable} ${dosis.variable} ${inter.variable} ${greatVibes.variable} antialiased`}
+      className={`${delaGothic.variable} ${inter.variable} ${instrument.variable} antialiased`}
     >
       <head>
         <InlineScript html={introBootScript} />

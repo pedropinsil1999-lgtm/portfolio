@@ -26,7 +26,7 @@ export type StackCard = {
   link?: { href: string; label: string };
 };
 
-const DIM = "#7298af"; // the title's first word once the script word is written
+const DIM = "#8d87d6"; // the title's first word once the script word is written
 
 const tones = {
   grafite: "border border-branco/10 bg-grafite text-branco",
@@ -106,7 +106,7 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
             )}
             {/* Phones: index over a left-aligned line; desktop: side by side. */}
             <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-6">
-              <span className="label text-base text-vermelho">{card.index}</span>
+              <span className="tag self-start text-[0.9rem]">{card.index}</span>
               <p className="max-w-[30ch] text-sm leading-snug opacity-70 md:max-w-xs md:text-right md:text-base md:leading-relaxed">
                 {card.text}
               </p>
@@ -138,11 +138,11 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
                   <span data-title-top className="block">
                     {card.title[0]}
                   </span>
-                  {/* Second word in script, bigger, tucked up over the bottom of the first. */}
+                  {/* Second word in the italic serif, tucked up over the bottom of the first. */}
                   <span
                     data-script
                     style={scriptRevealStyle}
-                    className={`relative z-10 -mx-[0.25em] -mt-[0.62em] -mb-[0.3em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.5em] pt-[0.3em] font-script text-[1.6em] font-normal leading-[0.9] tracking-normal text-branco ${scriptGlow}`}
+                    className={`relative z-10 -mx-[0.25em] -mt-[0.45em] -mb-[0.3em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.35em] pt-[0.3em] font-script text-[1.25em] font-normal italic leading-[0.9] tracking-normal text-branco ${scriptGlow}`}
                   >
                     {card.title[1]}
                   </span>
@@ -161,7 +161,7 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
               {card.link && (
                 <Link
                   href={card.link.href}
-                  className="group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-5 py-2.5 label text-[0.9rem] md:px-6 md:py-3 md:text-[0.95rem] text-preto transition-colors hover:bg-vermelho hover:text-branco"
+                  className="group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-5 py-2.5 label text-[0.9rem] md:px-6 md:py-3 md:text-[0.95rem] text-preto transition-colors hover:bg-vermelho"
                 >
                   {card.link.label}
                   <HoverArrow />

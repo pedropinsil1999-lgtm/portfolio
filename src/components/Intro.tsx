@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 // Room around each word. The top word's descender (the g in Português) hangs
 // towards the line, so it gets extra space below to sit as far from the line
 // as the bottom word's capitals do.
-const INK = "#010d14"; // the dark frame around the opening window
+const INK = "#0d0838"; // the dark frame around the opening window
 
 const pad = { top: "pb-[0.5em] pt-[0.16em]", bottom: "pb-[0.26em] pt-[0.16em]" } as const;
 
@@ -262,7 +262,7 @@ export default function Intro() {
         data-intro-aperture
         aria-hidden="true"
         style={{ opacity: 0, visibility: "hidden" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_0_150vmax_#010d14] will-change-[width,height,border-radius]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_0_150vmax_#0d0838] will-change-[width,height,border-radius]"
       />
 
       {/* The horizon line: outer element leans on hover, inner bar is drawn by GSAP. */}

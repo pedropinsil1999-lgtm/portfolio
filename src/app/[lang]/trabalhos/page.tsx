@@ -64,7 +64,7 @@ export default async function Trabalhos({ params }: PageProps<"/[lang]/trabalhos
 
       <section id="sites" data-theme="preto" className="relative isolate scroll-mt-24 px-6 py-20 md:px-12 md:py-28">
         <SectionBackdrop className="opacity-75">
-          <Noite seed={5} />
+          <Noite seed={5} light />
         </SectionBackdrop>
         <SectionHead label={t.work.sitesLabel} title={t.work.sitesTitle} />
         <SiteShowcase items={sites} />

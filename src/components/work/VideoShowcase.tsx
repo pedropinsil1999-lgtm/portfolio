@@ -46,7 +46,7 @@ export default function VideoShowcase({ items }: { items: Video[] }) {
         >
           <div
             data-video-frame
-            className="relative aspect-[9/16] overflow-hidden rounded-[1.25rem] border border-branco/10 bg-grafite/40"
+            className="relative aspect-[9/16] overflow-hidden rounded-[1.25rem] border border-fg/10 bg-grafite"
           >
             {video.src ? (
               <video
@@ -78,12 +78,12 @@ export default function VideoShowcase({ items }: { items: Video[] }) {
           {/* Description beside the frame: index and craft on top, the story below. */}
           <div className="flex min-w-0 flex-col justify-between py-1">
             <div>
-              <span className="label text-[0.95rem] text-vermelho">{pad(i + 1)}</span>
+              <span className="tag text-[0.85rem]">{pad(i + 1)}</span>
               <p className="label mt-2 text-[0.85rem] text-fg/50 sm:text-[0.95rem]">{video.kind[lang]}</p>
             </div>
             <div>
               <h3 className="font-display text-xl leading-tight text-fg sm:text-2xl xl:text-3xl">{video.title[lang]}</h3>
-              <div className="my-4 h-px w-10 bg-branco/20 sm:my-5" />
+              <div className="my-4 h-px w-10 bg-fg/25 sm:my-5" />
               <p className="text-sm leading-relaxed text-fg/70 sm:text-base">{video.about[lang]}</p>
             </div>
           </div>

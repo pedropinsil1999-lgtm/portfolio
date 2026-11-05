@@ -157,16 +157,16 @@ export default function ProofStack({ items }: { items: Art[] }) {
     <div ref={root} data-proof-stack className="relative mb-10 h-full min-h-[58svh] w-full overflow-x-clip md:mb-0 md:min-h-0">
       {/* Caption: the print on top of the pile */}
       <div className="absolute bottom-0 left-0 z-20 max-w-[16rem] md:bottom-auto md:top-1/2 md:-translate-y-1/2">
-        <p className="label text-[0.95rem] text-branco/50">
-          <span className="text-vermelho">{pad(order[0] + 1)}</span> / {pad(items.length)}
+        <p className="label text-[0.95rem] text-fg/60">
+          <span className="tag mr-1">{pad(order[0] + 1)}</span> / {pad(items.length)}
         </p>
-        <p key={`${top.slug}-k`} className="caption-in mt-4 label text-[0.95rem] text-branco/50">
+        <p key={`${top.slug}-k`} className="caption-in mt-4 label text-[0.95rem] text-fg/60">
           {top.kind[lang]}
         </p>
-        <p key={`${top.slug}-t`} className="caption-in mt-2 font-display text-2xl leading-tight text-branco md:text-3xl">
+        <p key={`${top.slug}-t`} className="caption-in mt-2 font-display text-2xl leading-tight text-fg md:text-3xl">
           {top.title}
         </p>
-        <p className="label mt-5 hidden text-[0.95rem] text-branco/40 md:block">{t.work.shuffleHint}</p>
+        <p className="label mt-5 hidden text-[0.95rem] text-fg/50 md:block">{t.work.shuffleHint}</p>
       </div>
 
       {/* The pile */}

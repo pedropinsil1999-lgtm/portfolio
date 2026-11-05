@@ -33,4 +33,4 @@ export function scriptSettle(el: Element | null, done: boolean) {
 }
 
 /** Soft glow behind the script in the palette's light blue. */
-export const scriptGlow = "[text-shadow:0_0_0.4em_rgb(194_232_255_/_0.28)]";
+export const scriptGlow = "[text-shadow:0_0_0.4em_rgb(244_252_250_/_0.3)]";

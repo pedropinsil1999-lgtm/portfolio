@@ -5,7 +5,7 @@ import { gsap } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
 
 const R = 240; // light radius (px)
-const DOTS = "radial-gradient(rgb(194 232 255 / 0.32) 1px, transparent 1.4px)";
+const DOTS = "radial-gradient(rgb(28 20 100 / 0.3) 1px, transparent 1.4px)";
 const STEP = 22; // dot grid spacing (px)
 const SOFT = `radial-gradient(${R}px circle at center, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 100%)`;
 

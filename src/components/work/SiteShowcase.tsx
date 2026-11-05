@@ -29,7 +29,7 @@ export default function SiteShowcase({ items }: { items: Site[] }) {
             data-cursor={t.work.openSite}
             className="group block self-start"
           >
-            <div className="relative aspect-[16/10] overflow-hidden rounded-[1rem] border border-branco/10 bg-preto">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-[1rem] border border-fg/15 bg-preto">
               <Image
                 src={site.image}
                 alt={site.name}
@@ -42,12 +42,12 @@ export default function SiteShowcase({ items }: { items: Site[] }) {
 
           <div className="flex min-w-0 flex-col justify-between gap-6 md:py-1">
             <div>
-              <span className="label text-[0.95rem] text-vermelho">{pad(i + 1)}</span>
+              <span className="tag text-[0.85rem]">{pad(i + 1)}</span>
               <p className="label mt-2 text-[0.85rem] text-fg/50 sm:text-[0.95rem]">{site.sector[lang]}</p>
             </div>
             <div>
               <h3 className="font-display text-xl leading-tight text-fg sm:text-2xl xl:text-3xl">{site.name}</h3>
-              <div className="my-4 h-px w-10 bg-branco/20 sm:my-5" />
+              <div className="my-4 h-px w-10 bg-fg/25 sm:my-5" />
               <p className="max-w-md text-sm leading-relaxed text-fg/70 sm:text-base">{site.summary[lang]}</p>
               <a
                 href={site.url}

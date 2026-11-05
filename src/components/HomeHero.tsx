@@ -4,14 +4,14 @@ import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion, whenIntroDone } from "@/lib/motion";
 import { scriptGlow, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown } from "@/lib/scriptReveal";
-import { NOITE } from "@/components/ui/CardBackdrop";
+import { MENTA } from "@/components/ui/CardBackdrop";
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { GRAIN } from "@/lib/grain";
 import HeroMegaphone from "@/components/HeroMegaphone";
 import { useHeroReveal } from "@/lib/useHeroReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
-const DIM = "#7298af"; // "Pedro" once "Henrique" is written
+const DIM = "#7f7abf"; // "Pedro" once the italic "Henrique" is written
 
 // Alpha threshold of the gooey filter: steep (blobs merge into one liquid
 // shape), looser, then off (plain type).
@@ -116,7 +116,7 @@ export default function HomeHero() {
         className="pointer-events-none absolute inset-0 overflow-hidden"
       >
         <div data-hero-bg-inner className="absolute inset-0 origin-top will-change-transform">
-          <MeshGradient {...NOITE} seed={3} active={bgActive} />
+          <MeshGradient {...MENTA} seed={3} active={bgActive} />
           <div
             className="absolute inset-0 opacity-[0.07]"
             style={{ backgroundImage: `url("${GRAIN}")`, backgroundSize: "160px 160px" }}
@@ -143,22 +143,22 @@ export default function HomeHero() {
 
         {/* On phones the kicker leads, above the megaphone. */}
         <div className="-order-1 mb-6 overflow-hidden md:order-none md:mb-0">
-          <p data-reveal className="label text-[0.95rem] text-branco/60">
+          <p data-reveal className="label text-[0.95rem] text-fg/70">
             {t.hero.kicker}
           </p>
         </div>
 
-        <h1 className="mt-6 font-display text-[clamp(3.5rem,19vw,15rem)] leading-[0.88] text-branco md:text-[clamp(3.5rem,15vw,15rem)]">
+        <h1 className="mt-6 font-display text-[clamp(3.5rem,19vw,15rem)] leading-[0.88] text-fg md:text-[clamp(3.5rem,15vw,15rem)]">
           <span className="block pb-[0.08em]">
             <span data-name-top className="block">
               Pedro
             </span>
           </span>
-          {/* Script, bigger, tucked up over the base of "Pedro". */}
+          {/* Italic serif, tucked up over the base of "Pedro". */}
           <span
             data-name-script
             style={scriptRevealStyle}
-            className={`relative z-10 -mx-[0.25em] -mb-[0.2em] -mt-[0.5em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.45em] pt-[0.3em] font-script text-[1.22em] font-normal md:text-[1.45em] leading-[0.9] tracking-normal ${scriptGlow}`}
+            className={`relative z-10 -mx-[0.25em] -mb-[0.2em] -mt-[0.56em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.3em] pt-[0.3em] font-script text-[1.08em] font-normal italic md:text-[1.15em] leading-[0.9] tracking-normal ${scriptGlow}`}
           >
             Henrique
           </span>
@@ -166,12 +166,12 @@ export default function HomeHero() {
 
         <div className="mt-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="overflow-hidden">
-            <p data-reveal className="max-w-md text-lg leading-snug text-branco md:text-2xl">
+            <p data-reveal className="max-w-md text-lg leading-snug text-fg md:text-2xl">
               {t.hero.tagline}
             </p>
           </div>
           <div className="overflow-hidden">
-            <p data-reveal className="label text-[0.95rem] text-branco/50">
+            <p data-reveal className="label text-[0.95rem] text-fg/60">
               {t.hero.scroll}
             </p>
           </div>

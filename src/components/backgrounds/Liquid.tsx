@@ -7,8 +7,8 @@ import { prefersReducedMotion } from "@/lib/motion";
 
 /**
  * Closing section background: a liquid gradient (Paper's "warp" shader, as in
- * Framer's Animated Liquid Background, "Mist" settings) in the light blues of
- * the palette, so the dark navy title stays readable on top.
+ * Framer's Animated Liquid Background, "Mist" settings) in indigo with pink
+ * swirls, under the light title of the closing section.
  * It fades in on the same scroll range as the page colour (see ScrollTheme),
  * so the navy dissolves into the liquid instead of meeting it at an edge.
  * Compiling the shader is a hitch, so it is done once the page is idle (or
@@ -75,13 +75,13 @@ export default function Liquid() {
       className="absolute inset-0"
       style={{
         background:
-          "radial-gradient(ellipse 60% 45% at 30% 35%, #c2e8ff 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 72% 60%, rgb(114 152 175 / 0.45) 0%, transparent 70%), #eaffff",
+          "radial-gradient(ellipse 60% 45% at 30% 35%, #2b2290 0%, transparent 70%), radial-gradient(ellipse 50% 40% at 72% 60%, rgb(255 112 165 / 0.35) 0%, transparent 70%), #1c1464",
       }}
     >
       {near && (
         <Warp
           className="h-full w-full"
-          colors={["#eaffff", "#c2e8ff", "#7298af", "#eaffff", "#c2e8ff"]}
+          colors={["#1c1464", "#2b2290", "#ff70a5", "#1c1464", "#3a2a9c"]}
           proportion={0.35}
           softness={1}
           distortion={0.18}
@@ -104,7 +104,7 @@ export default function Liquid() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 62% 46% at 50% 52%, rgb(234 255 255 / 0.92) 0%, rgb(234 255 255 / 0.7) 45%, rgb(234 255 255 / 0) 100%)",
+            "radial-gradient(ellipse 62% 46% at 50% 52%, rgb(28 20 100 / 0.92) 0%, rgb(28 20 100 / 0.7) 45%, rgb(28 20 100 / 0) 100%)",
         }}
       />
       {/* Soft top and bottom so the section has no edges: a fade to the page

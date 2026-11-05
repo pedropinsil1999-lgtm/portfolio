@@ -5,7 +5,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
 import { scriptGlow, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown } from "@/lib/scriptReveal";
 
-const DIM = "#365c73"; // the sentence once the highlight takes over
+const DIM = "#8f8bc4"; // the sentence once the highlight takes over
 
 /**
  * A statement whose words light up one by one as it scrolls through the
@@ -63,7 +63,7 @@ export default function ScrollText({
           // Padding (cancelled by negative margins) gives the mask room for the
           // swashes and glow that spill past the letters.
           style={scriptRevealStyle}
-          className={`-mx-[0.25em] -my-[0.3em] inline-block whitespace-nowrap px-[0.33em] py-[0.3em] align-baseline font-script text-[1.9em] leading-[0.7] tracking-normal text-branco ${scriptGlow}`}
+          className={`-mx-[0.25em] -my-[0.3em] inline-block whitespace-nowrap px-[0.33em] py-[0.3em] align-baseline font-script text-[1.3em] italic leading-[0.7] tracking-normal text-fg ${scriptGlow}`}
         >
           {highlight}
         </span>

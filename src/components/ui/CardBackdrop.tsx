@@ -3,12 +3,22 @@
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { GRAIN } from "@/lib/grain";
 
-// Card background: a dark mesh gradient ("Noite") that twists around the cursor.
+// Card background: a dark indigo mesh gradient ("Noite") that twists around the cursor.
 export const NOITE = {
-  colors: ["#021a29", "#042a41", "#004671", "#365c73"],
+  colors: ["#120c46", "#1c1464", "#2b2290", "#3a2a9c"],
   intensity: 0.45,
   softness: 0.35,
   vignette: 0.35,
+  cursor: true,
+};
+
+// Light field for the page itself (hero, section backgrounds): the mint of
+// the identity, barely moving.
+export const MENTA = {
+  colors: ["#a2ecc9", "#aaf2cf", "#cdf9e5", "#93e2be"],
+  intensity: 0.45,
+  softness: 0.35,
+  vignette: 0,
   cursor: true,
 };
 

@@ -46,20 +46,20 @@ export default function PageHero({
       <div className="relative flex min-h-[38svh] flex-1 items-center">{children}</div>
 
       <div className="overflow-hidden">
-        <p data-reveal className="mb-6 label text-[0.95rem] text-branco/60">
+        <p data-reveal className="mb-6 label text-[0.95rem] text-fg/70">
           {index}
         </p>
       </div>
       <div className="overflow-hidden">
         <h1
           data-reveal
-          className="pb-[0.12em] font-display text-[clamp(3rem,12vw,11rem)] leading-[0.9] text-branco"
+          className="pb-[0.12em] font-display text-[clamp(3rem,12vw,11rem)] leading-[0.9] text-fg"
         >
           {title}
         </h1>
       </div>
       <div className="overflow-hidden">
-        <p data-reveal className="mt-8 max-w-sm text-sm text-branco/60">
+        <p data-reveal className="mt-8 max-w-sm text-sm text-fg/70">
           {note}
         </p>
       </div>

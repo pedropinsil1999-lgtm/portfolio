@@ -14,7 +14,7 @@ const pill =
   "rounded-full border border-branco/10 bg-[var(--pill-surface,var(--pill-bg))] text-branco transition-colors duration-500";
 
 // Pill colour to use over each `data-surface`.
-const overSurface: Record<string, string> = { grafite: "#042a41" };
+const overSurface: Record<string, string> = { grafite: "#3a30a0" };
 
 export default function Header() {
   const pathname = usePathname();

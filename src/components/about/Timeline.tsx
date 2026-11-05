@@ -102,9 +102,9 @@ export default function Timeline() {
         <div className="relative h-16">
           {/* Track: solid past, dashed future */}
           <div data-track className="absolute inset-x-0 bottom-0 h-px origin-left">
-            <div className="absolute inset-y-0 left-0 bg-branco" style={{ width: `${now ?? 0}%` }} />
+            <div className="absolute inset-y-0 left-0 bg-fg" style={{ width: `${now ?? 0}%` }} />
             <div
-              className="absolute top-0 border-t border-dashed border-branco/35"
+              className="absolute top-0 border-t border-dashed border-fg/35"
               style={{ left: `${now ?? 0}%`, right: 0 }}
             />
           </div>
@@ -128,7 +128,7 @@ export default function Timeline() {
                   className={cn(
                     "absolute bottom-5 whitespace-nowrap font-display text-sm transition-colors duration-300 lg:text-base",
                     edge === "left" ? "left-1/2" : edge === "right" ? "right-1/2" : "left-1/2 -translate-x-1/2",
-                    isActive ? "text-branco" : "text-branco/45 group-hover/marker:text-branco",
+                    isActive ? "text-fg" : "text-fg/45 group-hover/marker:text-fg",
                   )}
                 >
                   {m.date}
@@ -136,7 +136,7 @@ export default function Timeline() {
                 <span
                   className={cn(
                     "absolute bottom-0 left-1/2 h-2.5 w-2.5 -translate-x-1/2 translate-y-1/2 rounded-full transition-transform duration-300",
-                    now !== null && markerPos(i) <= now ? "bg-branco" : "border border-branco/60 bg-preto",
+                    now !== null && markerPos(i) <= now ? "bg-fg" : "border border-fg/60 bg-[var(--page-bg)]",
                     isActive && "scale-150",
                   )}
                 />
@@ -158,26 +158,26 @@ export default function Timeline() {
             key={`${caption.date}-d`}
             className={cn(
               "caption-in label text-[0.95rem]",
-              caption.red ? "text-vermelho" : "text-branco/50",
+              caption.red ? "tag" : "text-fg/60",
             )}
           >
             {caption.date}
           </p>
-          <p key={`${caption.date}-t`} className="caption-in mt-3 max-w-2xl font-display text-2xl leading-tight text-branco lg:text-3xl">
+          <p key={`${caption.date}-t`} className="caption-in mt-3 max-w-2xl font-display text-2xl leading-tight text-fg lg:text-3xl">
             {caption.text}
           </p>
         </div>
       </div>
 
       {/* Mobile: vertical list with every milestone */}
-      <ol className="relative mb-12 ml-1 border-l border-branco/25 md:hidden">
+      <ol className="relative mb-12 ml-1 border-l border-fg/25 md:hidden">
         {t.about.milestones.map((m, i) => (
           <li key={m.date} className="relative pb-5 pl-6 last:pb-0">
-            <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-branco" />
-            <p className="font-display text-base text-branco">{m.date}</p>
-            <p className="mt-1 text-sm text-branco/60">{m.text}</p>
+            <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-fg" />
+            <p className="font-display text-base text-fg">{m.date}</p>
+            <p className="mt-1 text-sm text-fg/70">{m.text}</p>
             {i === 5 && (
-              <p className="mt-4 flex items-center gap-3 label text-[0.95rem] text-vermelho">
+              <p className="mt-4 flex items-center gap-3 label text-[0.95rem] font-semibold text-fg">
                 <span className="now-pulse relative -ml-[30px] h-3 w-3 rounded-full bg-vermelho" />
                 {t.about.now}
               </p>

@@ -16,7 +16,7 @@ export default function FilmGrain() {
       />
       <div
         className="absolute inset-0"
-        style={{ background: "radial-gradient(ellipse 75% 70% at 50% 50%, transparent 40%, rgb(2 26 41 / 0.55) 100%)" }}
+        style={{ background: "radial-gradient(ellipse 75% 70% at 50% 50%, transparent 40%, rgb(28 20 100 / 0.12) 100%)" }}
       />
     </div>
   );

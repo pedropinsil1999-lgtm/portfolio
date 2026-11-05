@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  /* Palette (test): deep navy base, ice-white type, steel blue as the signal
-     for details. Token names kept from the previous black/white/red palette
-     (#000000 / #141414 / #ffffff / #ed3237) so swapping back is one edit. */
-  --preto: #042a41;
-  --grafite: #004671; /* surfaces (cards, frames) so they lift off the base */
-  --branco: #eaffff;
-  --vermelho: #7298af;
-  --azul-claro: #c2e8ff; /* hairlines and textures (strokes, grid, dots) */
-  --azul-medio: #365c73;
+  /* Identity test (pedro.diretorvisual): mint page, indigo type and cards,
+     hot pink for highlights. Token names kept from the first palette:
+     preto = the dark ink (indigo), branco = light type on dark surfaces,
+     vermelho = the accent. The page itself is mint (--menta). */
+  --menta: #aaf2cf;
+  --preto: #1c1464;
+  --grafite: #231a78; /* surfaces (cards, frames), a touch lighter than the ink */
+  --branco: #f4fcfa;
+  --vermelho: #ff70a5;
+  --azul-claro: #c9f8e3; /* hairlines and textures (strokes, grid, dots) */
+  --azul-medio: #6a63b5;
   --ease-cine: cubic-bezier(0.76, 0, 0.24, 1);
   /* Live page colours, blended on scroll by <ScrollTheme>. */
-  --page-bg: var(--preto);
-  --page-fg: var(--branco);
-  --pill-bg: var(--grafite); /* header pills, blended by <ScrollTheme> */
+  --page-bg: var(--menta);
+  --page-fg: var(--preto);
+  --pill-bg: var(--preto); /* header pills, blended by <ScrollTheme> */
 }
 
 @theme inline {
@@ -22,11 +24,12 @@
   --color-grafite: var(--grafite);
   --color-branco: var(--branco);
   --color-vermelho: var(--vermelho);
+  --color-menta: var(--menta);
   --color-fg: var(--page-fg);
   --font-display: var(--font-dela-gothic);
-  --font-sans: var(--font-dosis);
+  --font-sans: var(--font-inter);
   --font-label: var(--font-inter);
-  --font-script: var(--font-great-vibes);
+  --font-script: var(--font-instrument);
 }
 
 /* The page canvas follows the live colour too: on iPhone, Safari tints the
@@ -36,12 +39,27 @@ body {
   background: var(--page-bg);
 }
 body {
-  color: var(--branco);
+  color: var(--page-fg);
 }
 
 ::selection {
   background: var(--vermelho);
-  color: var(--branco);
+  color: var(--preto);
+}
+
+/* Identity highlight: a hot pink pill, slightly tilted, for numbers and
+   short tags (the "PEDRO." / "Aqui eu mostro." pills of the identity). */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: var(--vermelho);
+  color: var(--preto);
+  padding: 0.15em 0.65em;
+  font-family: var(--font-label);
+  font-weight: 600;
+  line-height: 1.3;
+  rotate: -3deg;
 }
 
 /* Small labels, menu and captions: Inter in sentence case, never the
@@ -117,7 +135,7 @@ html[data-intro="resume"] {
    an outline; hovering/focusing fills it outward from the horizon line. */
 .lang-word {
   color: transparent;
-  -webkit-text-stroke: 1px rgb(194 232 255 / 0.4);
+  -webkit-text-stroke: 1px rgb(244 252 250 / 0.4);
 }
 .lang-fill {
   color: var(--branco);
@@ -144,10 +162,10 @@ html[data-intro="resume"] {
 /* Contact links: outline words that fill left-to-right on hover/focus. */
 .contact-outline {
   color: transparent;
-  -webkit-text-stroke: 1px rgb(194 232 255 / 0.45);
+  -webkit-text-stroke: 1px rgb(28 20 100 / 0.6);
 }
 .contact-fill {
-  color: var(--branco);
+  color: var(--preto);
   clip-path: inset(-25% 100% -25% 0);
   transition: clip-path 0.7s var(--ease-cine);
 }
@@ -190,7 +208,7 @@ html[data-intro="resume"] {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  background: rgb(114 152 175 / 0.6);
+  background: rgb(255 112 165 / 0.6);
   animation: now-pulse 2s ease-out infinite;
 }
 @keyframes now-pulse {

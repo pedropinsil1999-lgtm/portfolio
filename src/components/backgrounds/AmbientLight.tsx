@@ -36,7 +36,7 @@ export default function AmbientLight({
     const stops: [number, number][] = [
       [0, 0.17], [0.143, 0.14], [0.286, 0.1], [0.429, 0.066], [0.571, 0.038], [0.714, 0.018], [0.857, 0.006], [1, 0],
     ];
-    stops.forEach(([at, a]) => g.addColorStop(at, `rgba(194, 232, 255, ${a})`));
+    stops.forEach(([at, a]) => g.addColorStop(at, `rgba(244, 252, 250, ${Math.min(1, a * 2.2)})`));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 128, 128);
   }, []);

@@ -47,9 +47,9 @@ export default function ContactLinks() {
   );
 
   return (
-    <ul ref={root} className="mb-14 w-full self-end border-t border-branco/10 md:mb-20">
+    <ul ref={root} className="mb-14 w-full self-end border-t border-fg/15 md:mb-20">
       {links.map((l) => (
-        <li key={l.label} className="overflow-hidden border-b border-branco/10">
+        <li key={l.label} className="overflow-hidden border-b border-fg/15">
           <a
             data-contact-row
             href={l.href}
@@ -64,11 +64,11 @@ export default function ContactLinks() {
                 {l.label}
               </span>
             </span>
-            <span className="flex items-center gap-3 label text-[0.95rem] text-branco/50 transition-colors group-hover/link:text-branco">
+            <span className="flex items-center gap-3 label text-[0.95rem] text-fg/60 transition-colors group-hover/link:text-fg">
               <span className="md:text-base">{l.meta}</span>
               <span
                 aria-hidden="true"
-                className="text-base text-vermelho transition-transform duration-500 ease-[var(--ease-cine)] group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
+                className="text-base text-fg transition-transform duration-500 ease-[var(--ease-cine)] group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5"
               >
                 {l.download ? "↓\uFE0E" : "↗\uFE0E"}
               </span>
