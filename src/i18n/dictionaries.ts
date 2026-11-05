@@ -24,6 +24,8 @@ export type Dictionary = {
   };
   /** `highlight` closes `text`, written in script and revealed last. */
   statement: { label: string; text: string; highlight: string };
+  /** The giant line of type under the glass strip. */
+  band: string;
   services: { label: string; cta: string; reelSoon: string; cards: Card[] };
   cta: { label: string; title: string; button: string };
   footer: { backToTop: string };
@@ -97,6 +99,7 @@ const pt: Dictionary = {
     text: "Cada peça tem um trabalho a fazer: ser vista, ser entendida e levar ao",
     highlight: "próximo passo.",
   },
+  band: "Como eu faço",
   services: {
     label: "O que eu faço",
     cta: "Ver trabalhos",
@@ -228,6 +231,7 @@ const en: Dictionary = {
     text: "Every piece has a job to do: be seen, be understood and lead to the",
     highlight: "next step.",
   },
+  band: "How I do it",
   services: {
     label: "What I do",
     cta: "See the work",
