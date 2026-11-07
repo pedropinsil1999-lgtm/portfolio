@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion, whenIntroDone } from "@/lib/motion";
-import { scriptGlow, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown } from "@/lib/scriptReveal";
+import { scriptGlowLight, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown } from "@/lib/scriptReveal";
 import { MENTA } from "@/components/ui/CardBackdrop";
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { GRAIN } from "@/lib/grain";
@@ -158,7 +158,7 @@ export default function HomeHero() {
           <span
             data-name-script
             style={scriptRevealStyle}
-            className={`relative z-10 -mx-[0.25em] -mb-[0.2em] -mt-[0.56em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.3em] pt-[0.3em] font-script text-[1.08em] font-normal italic md:text-[1.15em] leading-[0.9] tracking-normal ${scriptGlow}`}
+            className={`relative z-10 -mx-[0.25em] -mb-[0.2em] -mt-[0.56em] inline-block whitespace-nowrap px-[0.33em] pb-[0.3em] pl-[0.3em] pt-[0.3em] font-script text-[1.08em] font-normal italic md:text-[1.15em] leading-[0.9] tracking-normal ${scriptGlowLight}`}
           >
             Henrique
           </span>

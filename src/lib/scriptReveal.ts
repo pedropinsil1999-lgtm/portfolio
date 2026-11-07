@@ -32,5 +32,7 @@ export function scriptSettle(el: Element | null, done: boolean) {
   }
 }
 
-/** Soft glow behind the script in the palette's light blue. */
-export const scriptGlow = "[text-shadow:0_0_0.4em_rgb(244_252_250_/_0.3)]";
+/** Soft glow behind the italic highlight on dark cards, in the mint of the palette. */
+export const scriptGlow = "[text-shadow:0_0_0.4em_rgb(170_242_207_/_0.5)]";
+/** The same lit look for indigo highlights on the mint page: a white halo. */
+export const scriptGlowLight = "[text-shadow:0_0_0.45em_rgb(255_255_255_/_0.95),0_0_0.15em_rgb(255_255_255_/_0.7)]";
