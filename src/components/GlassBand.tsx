@@ -1,124 +1,121 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
 
-const POINTS = 56; // samples along the tube
+const POINTS = 64; // samples along the tube
+
+// Cross-section of a clear glass tube on the mint page, as strokes laid along
+// the tube at an offset (-1 = top edge, 1 = bottom edge) of the radius. Edges
+// darken (the glass is seen edge-on there), the body is barely tinted, light
+// catches a sharp line near the top and a caustic glint near the bottom.
+type Layer = { at: number; width: number; color: string; alpha: number; glint?: boolean };
+const SHADOW: Layer[] = [2.6, 2.2, 1.8, 1.4].map((width) => ({ at: 0, width, color: "#1f6a5c", alpha: 0.045 }));
+const GLASS: Layer[] = [
+  { at: 0, width: 2, color: "#e8fff6", alpha: 0.22 },
+  { at: 0.55, width: 0.5, color: "#2f8a78", alpha: 0.1 },
+  { at: -0.88, width: 0.26, color: "#2f8a78", alpha: 0.32 },
+  { at: 0.88, width: 0.26, color: "#2f8a78", alpha: 0.4 },
+  { at: -0.985, width: 0.05, color: "#1f6a5c", alpha: 0.55 },
+  { at: 0.985, width: 0.05, color: "#1f6a5c", alpha: 0.6 },
+  { at: -0.38, width: 0.55, color: "#ffffff", alpha: 0.2 },
+  { at: -0.56, width: 0.15, color: "#ffffff", alpha: 0.95, glint: true },
+  { at: -0.74, width: 0.05, color: "#ffffff", alpha: 0.65, glint: true },
+  { at: 0.7, width: 0.08, color: "#ffffff", alpha: 0.6, glint: true },
+  { at: 0.32, width: 0.04, color: "#ffffff", alpha: 0.3 },
+];
 
 /**
- * The identity's glass strip: a giant line of type running sideways, with a
- * glass tube waving across it. The type drifts slowly and speeds up (and
- * follows the direction) with the scroll; the tube keeps rippling, faster
- * while the page moves. Inside the tube the type is redrawn lighter, a touch
- * bigger and shifted, so it reads as refraction, with highlights along the
- * tube for the glass. Plain SVG updated a few attributes per frame, and only
+ * The identity's glass strip: a clear glass tube waving across the page. It
+ * keeps rippling slowly; scrolling makes it ripple faster and pushes the wave
+ * along in the direction of the scroll. Drawn as SVG strokes following the
+ * tube (shading, edges, highlights and a soft shadow), updated per frame only
  * while the strip is on screen.
  */
-export default function GlassBand({ text }: { text: string }) {
+export default function GlassBand() {
   const root = useRef<HTMLDivElement>(null);
-  const measure = useRef<SVGTextElement>(null);
-  const [size, setSize] = useState({ w: 0, h: 0, font: 0 });
-  const [unit, setUnit] = useState(0);
-  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const word = `${text.toUpperCase()}  `;
+  const [size, setSize] = useState({ w: 0, h: 0, r: 0 });
 
-  // Size follows the width of the page.
   useEffect(() => {
     const el = root.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
       const w = Math.round(entry.contentRect.width);
-      const font = Math.round(Math.min(Math.max(w * 0.16, 76), 250));
-      setSize((s) => (s.w === w ? s : { w, h: Math.round(font * 1.22), font }));
+      const r = Math.round(Math.min(Math.max(w * 0.032, 20), 56));
+      setSize((s) => (s.w === w ? s : { w, h: Math.round(r * 8.5), r }));
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  // Width of one repeat of the text, once the display font is in.
-  useEffect(() => {
-    if (!size.font) return;
-    let alive = true;
-    document.fonts.ready.then(() => {
-      if (alive && measure.current) setUnit(measure.current.getComputedTextLength());
-    });
-    return () => {
-      alive = false;
-    };
-  }, [size.font, word]);
-
   useEffect(() => {
     const el = root.current;
-    const { w, h, font } = size;
-    if (!el || !w || !unit) return;
-    const q = <T extends Element>(sel: string) => Array.from(el.querySelectorAll<T>(sel));
-    const texts = q<SVGTextElement>("[data-run]");
-    const clip = q<SVGPathElement>("[data-tube]");
-    const lines = q<SVGPathElement>("[data-line]");
+    const { w, h, r } = size;
+    if (!el || !w) return;
+    const shadow = Array.from(el.querySelectorAll<SVGPathElement>("[data-shadow]"));
+    const glass = Array.from(el.querySelectorAll<SVGPathElement>("[data-glass]"));
 
-    const amp = font * 0.22;
-    const r = font * 0.17;
-    const k = (Math.PI * 2) / Math.max(w * 0.9, 600);
-    const mid = h * 0.52;
+    const amp = r * 1.9;
+    const k = (Math.PI * 2) / Math.max(w * 0.85, 560);
+    const mid = h * 0.45;
     const fmt = (n: number) => Math.round(n * 10) / 10;
-
-    let x = 0;
     let phase = 0;
     let lastY = window.scrollY;
     let speed = 0;
     let last: number | null = null;
     let raf = 0;
     let visible = false;
-    const touch = window.matchMedia("(pointer: coarse)").matches;
-    const minStep = touch ? 1000 / 30 : 0;
+    const minStep = window.matchMedia("(pointer: coarse)").matches ? 1000 / 30 : 0;
 
-    const centre = (px: number) => mid + amp * Math.sin(px * k + phase) + amp * 0.3 * Math.sin(px * k * 2.3 - phase * 1.4);
-    const draw = () => {
-      // Tube outline (for the clip and the shadow) and lines along it.
-      const top: string[] = [];
-      const bottom: string[] = [];
-      const along = (offset: number) => {
-        let d = "";
-        for (let i = 0; i <= POINTS; i++) {
-          const px = -r + (i / POINTS) * (w + 2 * r);
-          d += `${i ? "L" : "M"}${fmt(px)} ${fmt(centre(px) + offset * r)}`;
-        }
-        return d;
-      };
+    const centre = (px: number) =>
+      mid + amp * Math.sin(px * k + phase) + amp * 0.28 * Math.sin(px * k * 2.2 - phase * 1.35);
+
+    // Points of the centre line with their normals, then any offset line.
+    const xs: number[] = [];
+    const cy: number[] = [];
+    const nx: number[] = [];
+    const ny: number[] = [];
+    const sample = () => {
       for (let i = 0; i <= POINTS; i++) {
-        const px = -r + (i / POINTS) * (w + 2 * r);
-        const c = centre(px);
-        top.push(`${fmt(px)} ${fmt(c - r)}`);
-        bottom.unshift(`${fmt(px)} ${fmt(c + r)}`);
+        const px = -3 * r + (i / POINTS) * (w + 6 * r);
+        const y = centre(px);
+        const dy = centre(px + 1) - centre(px - 1);
+        const len = Math.hypot(2, dy);
+        xs[i] = px;
+        cy[i] = y;
+        nx[i] = -dy / len;
+        ny[i] = 2 / len;
       }
-      const tube = `M${top.join("L")}L${bottom.join("L")}Z`;
-      for (const p of clip) p.setAttribute("d", tube);
-      for (const p of lines) p.setAttribute("d", along(Number(p.dataset.line)));
-      const tx = `translate(${fmt(x)} 0)`;
-      for (const t of texts) {
-        const lens = t.dataset.run === "lens";
-        // Through the glass: shifted up and a little magnified.
-        t.setAttribute("transform", lens ? `${tx} translate(0 ${fmt(-r * 0.18)}) scale(1.02 1.03)` : tx);
+    };
+    const line = (offset: number, dx = 0, dy = 0) => {
+      let d = "";
+      for (let i = 0; i <= POINTS; i++) {
+        d += `${i ? "L" : "M"}${fmt(xs[i] + nx[i] * offset * r + dx)} ${fmt(cy[i] + ny[i] * offset * r + dy)}`;
       }
+      return d;
+    };
+    const draw = () => {
+      sample();
+      const s = line(0, r * 0.5, r * 1.15);
+      for (const p of shadow) p.setAttribute("d", s);
+      for (const p of glass) p.setAttribute("d", line(Number(p.dataset.glass)));
     };
 
     const frame = (now: number) => {
       raf = 0;
       if (!visible) return;
-      const dt = last === null ? 0 : Math.min((now - last) / 1000, 0.1);
       if (minStep && last !== null && now - last < minStep - 2) {
         raf = requestAnimationFrame(frame);
         return;
       }
+      const dt = last === null ? 0 : Math.min((now - last) / 1000, 0.1);
       last = now;
       const y = window.scrollY;
       const dy = y - lastY;
       lastY = y;
       speed += (Math.abs(dy) - speed) * 0.15;
-      phase += dt * (1.2 + Math.min(speed * 0.05, 4));
-      x -= dt * 36 + dy * 0.7;
-      x %= unit;
-      if (x > 0) x -= unit;
+      // Slow ripple of its own; the scroll pushes the wave along.
+      phase += dt * (0.9 + Math.min(speed * 0.04, 3)) + dy * 0.004;
       draw();
       raf = requestAnimationFrame(frame);
     };
@@ -136,51 +133,35 @@ export default function GlassBand({ text }: { text: string }) {
       io.disconnect();
       cancelAnimationFrame(raf);
     };
-  }, [size, unit]);
+  }, [size]);
 
-  const { w, h, font } = size;
-  const repeats = unit ? Math.ceil(w / unit) + 2 : 1;
-  const run = word.repeat(repeats);
-  const baseline = h * 0.8;
-  const textProps = {
-    y: baseline,
-    fontSize: font,
-    className: "font-display",
-    style: { whiteSpace: "pre" as const },
-  };
+  const { w, h, r } = size;
+  const stroke = (l: Layer) => ({
+    fill: "none",
+    // Highlights come and go along the tube, like reflections on real glass.
+    stroke: l.glint ? "url(#glass-glint)" : l.color,
+    strokeOpacity: l.alpha,
+    strokeWidth: Math.max(1, l.width * r),
+    strokeLinejoin: "round" as const,
+  });
 
   return (
-    <div ref={root} aria-hidden="true" className="pointer-events-none relative w-full overflow-hidden" style={{ height: h || 160 }}>
+    <div ref={root} aria-hidden="true" className="pointer-events-none relative w-full overflow-hidden" style={{ height: h || 200 }}>
       {w > 0 && (
         <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="block">
           <defs>
-            <clipPath id={`${id}-tube`}>
-              <path data-tube="" />
-            </clipPath>
+            <linearGradient id="glass-glint" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={w} y2="0">
+              {[0.35, 1, 0.45, 0.25, 0.9, 1, 0.4, 0.3, 0.85, 0.5].map((o, i, all) => (
+                <stop key={i} offset={i / (all.length - 1)} stopColor="#ffffff" stopOpacity={o} />
+              ))}
+            </linearGradient>
           </defs>
-          <text ref={measure} {...textProps} visibility="hidden">
-            {word}
-          </text>
-          {/* Soft shadow of the tube on the page. */}
-          <g transform={`translate(${font * 0.08} ${font * 0.22})`} opacity="0.07">
-            <path data-tube="" fill="var(--preto)" />
-          </g>
-          <text data-run="base" {...textProps} fill="var(--preto)">
-            {run}
-          </text>
-          <g clipPath={`url(#${id}-tube)`}>
-            <text data-run="lens" {...textProps} fill="#2c2390">
-              {run}
-            </text>
-            <rect width={w} height={h} fill="var(--branco)" opacity="0.26" />
-          </g>
-          {/* Glass: a soft sheen, a crisp highlight on top, a darker rim and a
-              caustic glint underneath. */}
-          <path data-line="-0.25" fill="none" stroke="#ffffff" strokeOpacity="0.28" strokeWidth={font * 0.1} strokeLinecap="round" />
-          <path data-line="-0.62" fill="none" stroke="#ffffff" strokeOpacity="0.85" strokeWidth={Math.max(2, font * 0.022)} strokeLinecap="round" />
-          <path data-line="0.92" fill="none" stroke="var(--preto)" strokeOpacity="0.28" strokeWidth={Math.max(1.5, font * 0.016)} />
-          <path data-line="-0.96" fill="none" stroke="var(--preto)" strokeOpacity="0.18" strokeWidth={Math.max(1, font * 0.01)} />
-          <path data-line="0.62" fill="none" stroke="#ffffff" strokeOpacity="0.45" strokeWidth={Math.max(1.5, font * 0.014)} strokeLinecap="round" />
+          {SHADOW.map((l, i) => (
+            <path key={`s${i}`} data-shadow="" {...stroke(l)} />
+          ))}
+          {GLASS.map((l, i) => (
+            <path key={`g${i}`} data-glass={l.at} {...stroke(l)} />
+          ))}
         </svg>
       )}
     </div>

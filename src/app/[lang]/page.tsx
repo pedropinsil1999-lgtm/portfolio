@@ -40,7 +40,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         />
       </section>
 
-      <GlassBand text={t.band} />
+      <GlassBand />
 
       <section data-theme="preto" className="px-4 pb-12 pt-16 md:px-12 md:pb-16 md:pt-24">
         <p className="mb-10 px-2 label text-[0.95rem] text-fg/50 md:px-0">
