@@ -43,3 +43,7 @@ next-env.d.ts
 # local screenshots and editor tooling
 /prints
 /.claude
+
+# 3D source files and exports (kept locally, not shipped)
+*.glb
+/megafone.png
