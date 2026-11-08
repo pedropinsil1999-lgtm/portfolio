@@ -11,7 +11,66 @@ export type Art = {
   client: Localized;
   /** Short explanation shown beside the piece in the viewer. */
   about: Localized;
+  /** Intrinsic size when not the usual 1080×1350 (4:5). */
+  size?: { w: number; h: number };
+  /** Focus of the 4:5 thumbnail crop, for photos framed off-centre. */
+  position?: string;
 };
+
+/** The pieces installed in place at ArcelorMittal (photos of the sites). */
+export const ambientes: Art[] = [
+  {
+    slug: "ambientacao-aniversario",
+    src: "/work/ambientacao-aniversario.webp",
+    size: { w: 608, h: 1080 },
+    position: "50% 45%",
+    title: "17 anos em Resende",
+    kind: { pt: "Ambientação", en: "Environmental graphics" },
+    client: { pt: "ArcelorMittal · Resende", en: "ArcelorMittal · Resende" },
+    about: {
+      pt: "Banner do aniversário de 17 anos da unidade de Resende, instalado na área de circulação dos empregados. O degradê da marca leva a mensagem de agradecimento, e a foto da usina com dois empregados mostra quem faz essa trajetória.",
+      en: "Banner for the Resende plant's 17th anniversary, set up where employees walk past every day. The brand gradient carries the thank-you message, and the photo of the plant with two employees shows who made that journey.",
+    },
+  },
+  {
+    slug: "ambientacao-acidente-zero",
+    src: "/work/ambientacao-acidente-zero.webp",
+    size: { w: 608, h: 1080 },
+    position: "50% 55%",
+    title: "Acidente Zero",
+    kind: { pt: "Ambientação", en: "Environmental graphics" },
+    client: { pt: "ArcelorMittal · segurança", en: "ArcelorMittal · safety" },
+    about: {
+      pt: "Painel de parede da campanha de segurança \"Acredite no zero\". A curva separa a foto da equipe da mensagem, e o círculo da marca destaca o número 1 da meta, que é acidente zero.",
+      en: "Wall panel for the \"Believe in zero\" safety campaign. A curve separates the team photo from the message, and the brand circle highlights the number 1 of the goal: zero accidents.",
+    },
+  },
+  {
+    slug: "ambientacao-sipat",
+    src: "/work/ambientacao-sipat.webp",
+    size: { w: 608, h: 1080 },
+    title: "SIPAT 2025",
+    kind: { pt: "Ambientação", en: "Environmental graphics" },
+    client: { pt: "ArcelorMittal · SIPAT", en: "ArcelorMittal · SIPAT" },
+    about: {
+      pt: "Painel da Semana Interna de Prevenção de Acidentes, com a frase \"Eu me cuido por:\" deixando espaço em branco para os empregados completarem. A peça vira um mural de respostas ao longo da semana.",
+      en: "Panel for the internal accident prevention week, with the line \"I take care of myself for:\" leaving blank space for employees to fill in. Over the week the piece becomes a wall of their answers.",
+    },
+  },
+  {
+    slug: "ambientacao-mural",
+    src: "/work/ambientacao-mural.webp",
+    size: { w: 1080, h: 608 },
+    position: "22% 50%",
+    title: "Aços inteligentes",
+    kind: { pt: "Ambientação", en: "Environmental graphics" },
+    client: { pt: "ArcelorMittal · Resende", en: "ArcelorMittal · Resende" },
+    about: {
+      pt: "Mural de parede com o posicionamento da marca, \"Aços inteligentes para as pessoas e o planeta\". A ilustração liga pontos como uma constelação e a lona curva com a foto da usina fecha a composição no canto.",
+      en: "Wall mural carrying the brand's line, \"Smart steels for people and the planet\". The illustration joins points like a constellation, and the curved panel with the plant photo closes the composition in the corner.",
+    },
+  },
+];
 
 export type Video = {
   slug: string;

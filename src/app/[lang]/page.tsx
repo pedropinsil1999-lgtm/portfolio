@@ -29,7 +29,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         images: ["aniversario", "acidente-zero", "sipat", "mural"].map((n) => `/work/ambientacao-${n}.webp`),
         positions: ["50% 45%", "50% 55%", "50% 50%", "22% 50%"],
       },
-      link: work("direcao-visual"),
+      link: work("ambientacoes"),
     },
   ];
 

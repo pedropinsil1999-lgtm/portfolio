@@ -30,6 +30,8 @@ export type Dictionary = {
   work: {
     artsLabel: string;
     artsTitle: string;
+    placesLabel: string;
+    placesTitle: string;
     videosLabel: string;
     videosTitle: string;
     videoSoon: string;
@@ -137,6 +139,8 @@ const pt: Dictionary = {
   work: {
     artsLabel: "Direção visual",
     artsTitle: "Peças com uma ideia no centro.",
+    placesLabel: "Ambientações",
+    placesTitle: "As peças no lugar onde elas trabalham.",
     videosLabel: "Audiovisual",
     videosTitle: "Histórias com ritmo do começo ao fim.",
     videoSoon: "Em breve",
@@ -268,6 +272,8 @@ const en: Dictionary = {
   work: {
     artsLabel: "Visual direction",
     artsTitle: "Pieces built around one idea.",
+    placesLabel: "In place",
+    placesTitle: "The pieces where they do their job.",
     videosLabel: "Audiovisual",
     videosTitle: "Stories with rhythm from start to finish.",
     videoSoon: "Coming soon",
