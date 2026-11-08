@@ -21,7 +21,15 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
     { preview: { kind: "art", images: art("adolfz", "its-your-time", "bic") }, link: work("direcao-visual") },
     { preview: { kind: "reel", label: t.services.reelSoon }, link: work("audiovisual") },
     { preview: { kind: "site", images: sites.map((s) => s.image) }, link: work("sites") },
-    { preview: { kind: "art", images: art("adocao", "criancas") }, link: work("direcao-visual") },
+    // Photos of the pieces in place at ArcelorMittal (banner, murals, SIPAT).
+    {
+      preview: {
+        kind: "art",
+        images: ["aniversario", "acidente-zero", "sipat", "mural"].map((n) => `/work/ambientacao-${n}.webp`),
+        positions: ["50% 45%", "50% 55%", "50% 50%", "22% 50%"],
+      },
+      link: work("direcao-visual"),
+    },
   ];
 
   return (

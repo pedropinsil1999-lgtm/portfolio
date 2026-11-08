@@ -2,7 +2,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export type Preview =
-  | { kind: "art"; images: string[] }
+  | { kind: "art"; images: string[]; /** object-position per image (photos framed off-centre) */ positions?: string[] }
   | { kind: "site"; images: string[] }
   | { kind: "reel"; label: string };
 
@@ -11,6 +11,13 @@ const fan = [
   "-translate-x-[50%] rotate-[-8deg] group-hover/preview:-translate-x-[64%] group-hover/preview:rotate-[-11deg]",
   "z-10 -translate-y-[4%] group-hover/preview:-translate-y-[10%]",
   "translate-x-[50%] rotate-[8deg] group-hover/preview:translate-x-[64%] group-hover/preview:rotate-[11deg]",
+];
+// Four pieces: a wider fan, the middle two on top.
+const fan4 = [
+  "-translate-x-[66%] rotate-[-11deg] group-hover/preview:-translate-x-[82%] group-hover/preview:rotate-[-14deg]",
+  "z-10 -translate-x-[22%] -translate-y-[3%] rotate-[-3deg] group-hover/preview:-translate-x-[28%] group-hover/preview:-translate-y-[8%]",
+  "z-10 translate-x-[22%] -translate-y-[3%] rotate-[3deg] group-hover/preview:translate-x-[28%] group-hover/preview:-translate-y-[8%]",
+  "translate-x-[66%] rotate-[11deg] group-hover/preview:translate-x-[82%] group-hover/preview:rotate-[14deg]",
 ];
 const cascade = [
   "-translate-x-[14%] -translate-y-[22%] scale-[0.88] opacity-60 group-hover/preview:-translate-x-[20%] group-hover/preview:-translate-y-[32%]",
@@ -47,9 +54,11 @@ export default function CardPreview({ preview }: { preview: Preview }) {
 
   const isArt = preview.kind === "art";
   const poses = isArt ? fan : cascade;
-  const images = preview.images.slice(0, 3);
+  const images = preview.images.slice(0, isArt ? 4 : 3);
+  const positions = isArt ? preview.positions : undefined;
   // Two images: use the outer poses so they still read as a pair.
-  const pose = (i: number) => (images.length === 2 ? poses[i === 0 ? 0 : 2] : poses[i]);
+  const pose = (i: number) =>
+    isArt && images.length === 4 ? fan4[i] : images.length === 2 ? poses[i === 0 ? 0 : 2] : poses[i];
 
   return (
     <div
@@ -73,6 +82,7 @@ export default function CardPreview({ preview }: { preview: Preview }) {
             fill
             sizes={isArt ? "20rem" : "32rem"}
             className="object-cover object-top"
+            style={positions?.[i] ? { objectPosition: positions[i] } : undefined}
           />
         </div>
       ))}
