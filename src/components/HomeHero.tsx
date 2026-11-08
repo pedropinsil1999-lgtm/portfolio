@@ -11,7 +11,6 @@ import HeroMegaphone from "@/components/HeroMegaphone";
 import { useHeroReveal } from "@/lib/useHeroReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
-const DIM = "#7f7abf"; // "Pedro" once the italic "Henrique" is written
 
 // Alpha threshold of the gooey filter: steep (blobs merge into one liquid
 // shape), looser, then off (plain type).
@@ -31,7 +30,6 @@ export default function HomeHero() {
   useGSAP(
     (_, contextSafe) => {
       if (prefersReducedMotion()) {
-        gsap.set("[data-name-top]", { color: DIM });
         return;
       }
       const blur = document.querySelector("#hero-goo feGaussianBlur");
@@ -57,8 +55,7 @@ export default function HomeHero() {
             onComplete() {
               scriptSettle(this.targets()[0] as Element, true);
             },
-          }, 0.85)
-          .to("[data-name-top]", { color: DIM, duration: 1.2, ease: "power1.inOut" }, 1.35),
+          }, 0.85),
       );
       return whenIntroDone(play);
     },
@@ -150,7 +147,8 @@ export default function HomeHero() {
 
         <h1 className="mt-6 font-display text-[clamp(3.5rem,19vw,15rem)] leading-[0.88] text-fg md:text-[clamp(3.5rem,15vw,15rem)]">
           <span className="block pb-[0.08em]">
-            <span data-name-top className="block">
+            {/* Filled with a slow, light "Noite" field (see .noite-text). */}
+            <span data-name-top className="noite-text block">
               Pedro
             </span>
           </span>
