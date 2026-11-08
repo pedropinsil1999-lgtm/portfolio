@@ -11,7 +11,7 @@ import SectionBackdrop from "@/components/backgrounds/SectionBackdrop";
 import Noite from "@/components/backgrounds/Noite";
 import SiteShowcase from "@/components/work/SiteShowcase";
 import VideoShowcase from "@/components/work/VideoShowcase";
-import { arts, sites, videos } from "@/content/work";
+import { ambientes, arts, sites, videos } from "@/content/work";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 
@@ -52,6 +52,10 @@ export default async function Trabalhos({ params }: PageProps<"/[lang]/trabalhos
         </SectionBackdrop>
         <SectionHead label={t.work.artsLabel} title={t.work.artsTitle} />
         <ArtGallery items={arts} />
+        <div id="ambientacoes" className="mt-24 scroll-mt-24 md:mt-32">
+          <SectionHead label={t.work.placesLabel} title={t.work.placesTitle} />
+          <ArtGallery items={ambientes} />
+        </div>
       </section>
 
       <section id="audiovisual" data-theme="preto" className="relative isolate scroll-mt-24 px-6 py-20 md:px-12 md:py-28">

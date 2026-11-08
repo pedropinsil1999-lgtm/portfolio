@@ -68,9 +68,10 @@ export default function ArtGallery({ items }: { items: Art[] }) {
               <Image
                 src={art.src}
                 alt={`${art.title} | ${art.kind[lang]}`}
-                width={1080}
-                height={1350}
+                width={art.size?.w ?? 1080}
+                height={art.size?.h ?? 1350}
                 sizes="(min-width: 1024px) 30vw, 48vw"
+                style={art.position ? { objectPosition: art.position } : undefined}
                 className="aspect-[4/5] h-auto w-full object-cover transition-transform duration-[1.2s] ease-[var(--ease-cine)] group-hover:scale-[1.04]"
               />
             </div>
@@ -169,8 +170,8 @@ function Viewer({
             key={art.slug}
             src={art.src}
             alt={`${art.title} | ${art.kind[lang]}`}
-            width={1080}
-            height={1350}
+            width={art.size?.w ?? 1080}
+            height={art.size?.h ?? 1350}
             sizes="(min-width: 768px) 60vh, 90vw"
             priority
             onClick={(e) => e.stopPropagation()}
