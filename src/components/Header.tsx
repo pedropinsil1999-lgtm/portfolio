@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { swapLocale } from "@/i18n/config";
 import { saveLangChoice, useI18n } from "@/i18n/I18nProvider";
+import Logo from "@/components/ui/Logo";
 
 // Pill colour follows the page (see ScrollTheme): blue surface on dark
 // sections, the text navy on light ones. When the pills pass over a surface
@@ -84,9 +85,10 @@ export default function Header() {
         <Link
           href={href("/")}
           data-pill
-          className={`${pill} flex h-11 items-center px-4 font-display text-sm uppercase md:px-5`}
+          className={`${pill} flex h-11 items-center gap-2.5 px-3.5 font-display text-sm uppercase md:px-4`}
+          aria-label="Pedro Henrique"
         >
-          <span className="md:hidden">PH</span>
+          <Logo className="h-[1.15rem] w-[1.15rem]" />
           <span className="hidden md:inline">Pedro Henrique</span>
         </Link>
         <div className="flex items-center gap-2">
