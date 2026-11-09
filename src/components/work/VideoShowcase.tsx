@@ -54,7 +54,8 @@ export default function VideoShowcase({ items }: { items: Video[] }) {
                 poster={video.poster}
                 controls
                 playsInline
-                preload="metadata"
+                // Nothing downloads until play: the poster stands in.
+                preload="none"
                 aria-label={video.title[lang]}
                 className="absolute inset-0 h-full w-full object-cover"
               />

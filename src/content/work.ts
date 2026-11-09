@@ -165,21 +165,25 @@ export const arts: Art[] = [
 /** Audiovisual pieces, vertical 9:16. Placeholders until the files arrive. */
 export const videos: Video[] = [
   {
-    slug: "video-01",
-    title: { pt: "Vídeo 01", en: "Video 01" },
-    kind: { pt: "Roteiro, captação e edição", en: "Script, shoot and edit" },
+    slug: "b3x",
+    title: { pt: "B3X", en: "B3X" },
+    kind: { pt: "Motion", en: "Motion" },
+    src: "/work/b3x-motion.mp4",
+    poster: "/work/b3x-motion-poster.jpg",
     about: {
-      pt: "Texto provisório: aqui entra o contexto do vídeo, para quem foi feito, o que você fez e o resultado.",
-      en: "Placeholder: the video's context, who it was for, what you did and the result go here.",
+      pt: "Motion para a hamburgueria B3X. Os ingredientes flutuam em volta da frase \"Fome, qualquer lanche mata. Vontade de voltar, não.\", e o movimento monta o lanche enquanto a mensagem aparece.",
+      en: "Motion piece for the B3X burger place. The ingredients float around the line \"Hunger, any snack will do. Wanting to come back, no.\", and the movement builds the burger as the message lands.",
     },
   },
   {
-    slug: "video-02",
-    title: { pt: "Vídeo 02", en: "Video 02" },
-    kind: { pt: "Edição e motion", en: "Edit and motion" },
+    slug: "lincoln",
+    title: { pt: "Lincoln", en: "Lincoln" },
+    kind: { pt: "Motion com som", en: "Motion with sound" },
+    src: "/work/lincoln-som.mp4",
+    poster: "/work/lincoln-som-poster.jpg",
     about: {
-      pt: "Texto provisório: aqui entra o contexto do vídeo, para quem foi feito, o que você fez e o resultado.",
-      en: "Placeholder: the video's context, who it was for, what you did and the result go here.",
+      pt: "Motion tipográfico com trilha, construído em torno da frase \"Café tem gosto de café.\". A tipografia serifada e o verde escuro dão o tom, e o ritmo da animação acompanha o som.",
+      en: "Typographic motion with a soundtrack, built around the line \"Coffee tastes like coffee.\". The serif type and deep green set the tone, and the animation's rhythm follows the sound.",
     },
   },
 ];
