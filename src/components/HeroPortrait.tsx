@@ -60,8 +60,16 @@ export default function HeroPortrait() {
                 sizes="(min-width: 768px) 26vw, 66vw"
                 className="object-cover object-[50%_20%]"
               />
-              {/* A soft shade at the base so the name reads over the photo. */}
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-preto/45 to-transparent" />
+              {/* The light grey wall would read as a bright block on the navy page:
+                  a vignette in the page navy lets it fall away around the face,
+                  and the base darkens so the name reads over the photo. */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 62% 58% at 42% 34%, transparent 30%, rgb(4 42 65 / 0.55) 72%, rgb(4 42 65 / 0.9) 100%), linear-gradient(to top, rgb(4 42 65 / 0.85), transparent 45%)",
+                }}
+              />
             </div>
           </div>
           <span
