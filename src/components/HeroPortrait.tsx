@@ -53,7 +53,7 @@ export default function HeroPortrait() {
           <div className="rounded-t-full rounded-b-[2rem] border border-branco/25 p-2 md:p-2.5">
             <div className="relative aspect-[5/6] overflow-hidden rounded-t-full rounded-b-[1.6rem] bg-grafite">
               <Image
-                src="/hero/pedro-tinted.webp"
+                src="/hero/pedro-graded.webp"
                 alt="Pedro Henrique"
                 fill
                 priority
