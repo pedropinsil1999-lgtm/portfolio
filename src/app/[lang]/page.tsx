@@ -4,6 +4,7 @@ import CvDownload from "@/components/CvDownload";
 import ScrollText from "@/components/ScrollText";
 import StackCards from "@/components/StackCards";
 import CtaSection from "@/components/CtaSection";
+import FeaturedCase from "@/components/work/FeaturedCase";
 import type { StackCard } from "@/components/StackCards";
 import { arts, sites } from "@/content/work";
 import { hasLocale } from "@/i18n/config";
@@ -53,6 +54,9 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         </p>
         <StackCards cards={t.services.cards.map((card, i) => ({ ...card, tone: "grafite", ...extras[i] }))} />
       </section>
+
+      {/* A full project, told from idea to launch. */}
+      <FeaturedCase lang={lang} className="px-4 pb-16 md:px-12 md:pb-24" />
 
       <CtaSection lang={lang} t={t} />
     </>

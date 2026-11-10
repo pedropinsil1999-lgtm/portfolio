@@ -20,15 +20,15 @@ export const papoDom = {
     { label: { pt: "Onde", en: "Where" }, value: { pt: "AEDB · Resende, RJ", en: "AEDB · Resende, Brazil" } },
     {
       label: { pt: "Meu papel", en: "My role" },
-      value: { pt: "Site, carrossel e vídeos de divulgação", en: "Website, carousel and promo videos" },
+      value: { pt: "Identidade visual (em dupla), site e motion design", en: "Visual identity (in a pair), website and motion design" },
     },
   ] as { label: Localized; value: Localized }[],
   idea: {
     label: { pt: "A ideia", en: "The idea" },
     title: { pt: "Um sistema, quatro linguagens.", en: "One system, four languages." },
     text: {
-      pt: "A identidade não tem uma logo única: é um sistema de quatro variações, cada uma ligada a uma linguagem visual da década (revista, TV, internet e scrapbook). As logos são da Leticia Coutinho; a partir delas, criei as peças de divulgação e o site do evento.",
-      en: "The identity has no single logo: it is a system of four variations, each tied to a visual language of the decade (magazine, TV, internet and scrapbook). The logos are by Leticia Coutinho; from them I made the promotional pieces and the event's website.",
+      pt: "A identidade não tem uma logo única: é um sistema de quatro variações, cada uma ligada a uma linguagem visual da década (revista, TV, internet e scrapbook). Criei a identidade junto com outro integrante da equipe de comunicação e, a partir dela, fiz o site do evento e os motions que divulgaram as informações, apresentaram os convidados e contaram o evento.",
+      en: "The identity has no single logo: it is a system of four variations, each tied to a visual language of the decade (magazine, TV, internet and scrapbook). I built the identity together with another member of the comms team and, from it, made the event's website and the motion pieces that shared the details, introduced the guests and told the event's story.",
     },
   },
   carousel: {
@@ -50,8 +50,8 @@ export const papoDom = {
         poster: "/work/papo-dom/turma.jpg",
         title: { pt: "A turma", en: "The class" },
         about: {
-          pt: "Pôster animado que apresenta a turma do 4º período que fez o evento.",
-          en: "Animated poster introducing the 4th-semester class behind the event.",
+          pt: "Motion que apresenta a turma do 4º período que fez o evento.",
+          en: "Motion piece introducing the 4th-semester class behind the event.",
         },
       },
       {
@@ -60,8 +60,8 @@ export const papoDom = {
         poster: "/work/papo-dom/baile-charme.jpg",
         title: { pt: "Baile Charme", en: "Baile Charme" },
         about: {
-          pt: "Chamada em vídeo para a atração de dança da programação.",
-          en: "Video call-out for the dance act on the programme.",
+          pt: "Chamada para o baile charme, uma das atrações do evento.",
+          en: "Call-out for the baile charme, one of the event's acts.",
         },
       },
       {
@@ -75,6 +75,20 @@ export const papoDom = {
         },
       },
     ] as { slug: string; src: string; poster: string; title: Localized; about: Localized }[],
+  },
+  results: {
+    label: { pt: "Resultado", en: "Results" },
+    title: { pt: "O perfil do evento em 30 dias.", en: "The event's profile in 30 days." },
+    text: {
+      pt: "Instagram @papo.dom, de 29 de setembro a 28 de outubro. As visualizações dispararam na semana do evento e metade delas veio de quem ainda não seguia o perfil.",
+      en: "Instagram @papo.dom, 29 September to 28 October. Views shot up in the week of the event, and half of them came from people who didn't follow the profile yet.",
+    },
+    stats: [
+      { value: "79.191", label: { pt: "visualizações", en: "views" } },
+      { value: "2.192", label: { pt: "interações", en: "interactions" } },
+      { value: "+77", label: { pt: "seguidores", en: "followers" } },
+      { value: "50,1%", label: { pt: "das visualizações de não seguidores", en: "of views from non-followers" } },
+    ] as { value: string; label: Localized }[],
   },
   website: {
     label: { pt: "Site", en: "Website" },

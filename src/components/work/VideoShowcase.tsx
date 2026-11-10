@@ -5,6 +5,7 @@ import { gsap, useGSAP } from "@/lib/gsap";
 import { prefersReducedMotion } from "@/lib/motion";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Video } from "@/content/work";
+import VideoPlayer from "@/components/ui/VideoPlayer";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -49,15 +50,12 @@ export default function VideoShowcase({ items }: { items: Video[] }) {
             className="relative aspect-[9/16] overflow-hidden rounded-[1.25rem] border border-branco/10 bg-grafite/40"
           >
             {video.src ? (
-              <video
+              <VideoPlayer
                 src={video.src}
                 poster={video.poster}
-                controls
-                playsInline
-                // Nothing downloads until play: the poster stands in.
-                preload="none"
-                aria-label={video.title[lang]}
-                className="absolute inset-0 h-full w-full object-cover"
+                title={video.title[lang]}
+                silent={video.silent}
+                className="absolute inset-0"
               />
             ) : (
               <>

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import CtaSection from "@/components/CtaSection";
 import CaseCarousel from "@/components/work/CaseCarousel";
 import HoverArrow from "@/components/ui/HoverArrow";
+import VideoPlayer from "@/components/ui/VideoPlayer";
 import { papoDom as c } from "@/content/papoDom";
 import { hasLocale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -84,23 +85,31 @@ export default async function PapoDomCase({ params }: PageProps<"/[lang]/trabalh
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {c.videos.items.map((v) => (
             <article key={v.slug}>
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[1.25rem] border border-branco/10 bg-grafite">
-                <video
-                  src={v.src}
-                  poster={v.poster}
-                  controls
-                  playsInline
-                  // Nothing downloads until play: the poster stands in.
-                  preload="none"
-                  aria-label={v.title[lang]}
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              </div>
+              <VideoPlayer
+                src={v.src}
+                poster={v.poster}
+                title={v.title[lang]}
+                className="aspect-[4/5] rounded-[1.25rem] border border-branco/10"
+              />
               <h3 className="mt-5 font-display text-xl leading-tight text-fg md:text-2xl">{v.title[lang]}</h3>
               <p className="mt-2 max-w-sm text-sm leading-relaxed text-fg/70 md:text-base">{v.about[lang]}</p>
             </article>
           ))}
         </div>
+      </section>
+
+      {/* Results: the event profile's numbers, big. */}
+      <section data-theme="preto" className="px-6 py-16 md:px-12 md:py-24">
+        <Head label={c.results.label[lang]} title={c.results.title[lang]} text={c.results.text[lang]} />
+        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-[1.5rem] border border-branco/10 bg-branco/10 lg:grid-cols-4">
+          {c.results.stats.map((s) => (
+            <div key={s.value} className="bg-[var(--page-bg)] p-6 md:p-10">
+              <dt className="sr-only">{s.label[lang]}</dt>
+              <dd className="font-display text-[clamp(2.25rem,5vw,4.5rem)] leading-none text-fg">{s.value}</dd>
+              <p className="mt-3 max-w-[14rem] label text-[0.95rem] text-fg/60">{s.label[lang]}</p>
+            </div>
+          ))}
+        </dl>
       </section>
 
       <section data-theme="preto" className="px-6 pb-20 pt-16 md:px-12 md:pb-28 md:pt-24">

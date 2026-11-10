@@ -81,6 +81,8 @@ export type Video = {
   /** Vertical (9:16) file in /public/work; while missing, a placeholder shows. */
   src?: string;
   poster?: string;
+  /** Plays without sound (no sound control). */
+  silent?: boolean;
 };
 
 export type Site = {
@@ -169,6 +171,7 @@ export const videos: Video[] = [
     title: { pt: "B3X", en: "B3X" },
     kind: { pt: "Motion", en: "Motion" },
     src: "/work/b3x-motion.mp4",
+    silent: true,
     poster: "/work/b3x-motion-poster.jpg",
     about: {
       pt: "Motion para a hamburgueria B3X. Os ingredientes flutuam em volta da frase \"Fome, qualquer lanche mata. Vontade de voltar, não.\", e o movimento monta o lanche enquanto a mensagem aparece.",
@@ -178,12 +181,13 @@ export const videos: Video[] = [
   {
     slug: "lincoln",
     title: { pt: "Lincoln", en: "Lincoln" },
-    kind: { pt: "Motion com som", en: "Motion with sound" },
+    kind: { pt: "Motion", en: "Motion" },
     src: "/work/lincoln-som.mp4",
+    silent: true,
     poster: "/work/lincoln-som-poster.jpg",
     about: {
-      pt: "Motion tipográfico com trilha, construído em torno da frase \"Café tem gosto de café.\". A tipografia serifada e o verde escuro dão o tom, e o ritmo da animação acompanha o som.",
-      en: "Typographic motion with a soundtrack, built around the line \"Coffee tastes like coffee.\". The serif type and deep green set the tone, and the animation's rhythm follows the sound.",
+      pt: "Motion tipográfico construído em torno da frase \"Café tem gosto de café.\". A tipografia serifada e o verde escuro dão o tom, e o ritmo vem do movimento das palavras.",
+      en: "Typographic motion built around the line \"Coffee tastes like coffee.\". The serif type and deep green set the tone, and the rhythm comes from the words in motion.",
     },
   },
 ];
