@@ -28,7 +28,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         kind: "art",
         images: [
           "/work/ambientacao-aniversario.webp",
-          "/work/usina-pedro.webp",
+          "/work/usina-pedro-tinted.webp",
           "/work/ambientacao-acidente-zero.webp",
         ],
         positions: ["50% 42%", "50% 26%", "50% 52%"],
