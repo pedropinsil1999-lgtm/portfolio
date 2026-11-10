@@ -13,7 +13,7 @@ export type Dictionary = {
   meta: { title: string; description: string };
   nav: { home: string; work: string; about: string; contact: string; switchLanguage: string };
   intro: { label: string; choose: string; chooseOther: string; enter: string };
-  hero: { kicker: string; tagline: string; scroll: string };
+  hero: { kicker: string; tagline: string; scroll: string; hello: string };
   cv: {
     label: string;
     title: string;
@@ -82,6 +82,7 @@ const pt: Dictionary = {
     kicker: "Designer de Comunicação | Resende, RJ",
     tagline: "Direção visual, audiovisual e sites que levam à próxima ação.",
     scroll: "Rolar ↓\uFE0E",
+    hello: "Oi! Prazer :)",
   },
   cv: {
     label: "Currículo",
@@ -215,6 +216,7 @@ const en: Dictionary = {
     kicker: "Communication Designer | Resende, Brazil",
     tagline: "Visual direction, film and websites that lead to the next step.",
     scroll: "Scroll ↓\uFE0E",
+    hello: "Hi! Nice to meet you :)",
   },
   cv: {
     label: "Résumé",

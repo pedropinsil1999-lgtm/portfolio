@@ -7,7 +7,7 @@ import { scriptGlow, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown 
 import { NOITE } from "@/components/ui/CardBackdrop";
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { GRAIN } from "@/lib/grain";
-import HeroMegaphone from "@/components/HeroMegaphone";
+import HeroPortrait from "@/components/HeroPortrait";
 import { useHeroReveal } from "@/lib/useHeroReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -139,16 +139,16 @@ export default function HomeHero() {
         data-theme="preto"
         className="relative flex min-h-svh flex-col overflow-x-clip justify-end px-6 pb-10 pt-32 md:px-12 md:pb-12"
       >
-        <HeroMegaphone />
+        <HeroPortrait />
 
-        {/* On phones the kicker leads, above the megaphone. */}
+        {/* On phones the kicker leads, above the portrait. */}
         <div className="-order-1 mb-6 overflow-hidden md:order-none md:mb-0">
           <p data-reveal className="label text-[0.95rem] text-branco/60">
             {t.hero.kicker}
           </p>
         </div>
 
-        <h1 className="mt-6 font-display text-[clamp(3.5rem,19vw,15rem)] leading-[0.88] text-branco md:text-[clamp(3.5rem,15vw,15rem)]">
+        <h1 className="relative z-10 mt-6 font-display text-[clamp(3.5rem,19vw,15rem)] leading-[0.88] text-branco md:text-[clamp(3.5rem,15vw,15rem)]">
           <span className="block pb-[0.08em]">
             <span data-name-top className="block">
               Pedro

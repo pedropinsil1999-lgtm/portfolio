@@ -7,7 +7,9 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 /**
  * An Instagram carousel shown the way it is meant to be read: one slide after
- * the other, swiped (touch, trackpad) or stepped with the arrows. Native
+ * the other with no gap between them, so the artwork that runs across the
+ * slide edges reads as one continuous strip. Swiped (touch, trackpad) or
+ * stepped with the arrows. Native
  * horizontal scroll with snapping, so it costs nothing while idle.
  */
 export default function CaseCarousel({ slides, label }: { slides: string[]; label: string }) {
@@ -24,7 +26,7 @@ export default function CaseCarousel({ slides, label }: { slides: string[]; labe
       frame = requestAnimationFrame(() => {
         const first = el.firstElementChild as HTMLElement | null;
         if (!first) return;
-        const step = first.offsetWidth + parseFloat(getComputedStyle(el).columnGap || "0");
+        const step = first.offsetWidth; // slides touch: no gap
         setIndex(Math.max(0, Math.min(slides.length - 1, Math.round(el.scrollLeft / step))));
       });
     };
@@ -49,13 +51,13 @@ export default function CaseCarousel({ slides, label }: { slides: string[]; labe
     <div>
       <div
         ref={track}
-        className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-6 px-6 pb-4 [scrollbar-width:none] md:-mx-12 md:gap-6 md:scroll-px-12 md:px-12 [&::-webkit-scrollbar]:hidden"
+        className="-mx-6 flex snap-x snap-mandatory overflow-x-auto scroll-px-6 px-6 [scrollbar-width:none] md:-mx-12 md:scroll-px-12 md:px-12 [&::-webkit-scrollbar]:hidden"
         aria-label={label}
       >
         {slides.map((src, i) => (
           <div
             key={src}
-            className="relative aspect-[4/5] w-[min(78vw,26rem)] shrink-0 snap-start overflow-hidden rounded-[1.25rem] border border-branco/10 bg-grafite"
+            className={`relative aspect-[4/5] w-[min(78vw,26rem)] shrink-0 snap-start overflow-hidden bg-grafite ${i === 0 ? "rounded-l-[1.25rem]" : ""} ${i === slides.length - 1 ? "rounded-r-[1.25rem]" : ""}`}
           >
             <Image
               src={src}
