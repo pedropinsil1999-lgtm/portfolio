@@ -72,7 +72,7 @@ export default function ArtGallery({ items }: { items: Art[] }) {
                 height={art.size?.h ?? 1350}
                 sizes="(min-width: 1024px) 30vw, 48vw"
                 style={art.position ? { objectPosition: art.position } : undefined}
-                className="aspect-[4/5] h-auto w-full object-cover transition-transform duration-[1.2s] ease-[var(--ease-cine)] group-hover:scale-[1.04]"
+                className="aspect-[4/5] h-auto w-full object-cover transition-transform duration-[1.2s] ease-[var(--ease-cine)] group-hover:scale-[1.03]"
               />
             </div>
             <div className="mt-3 flex items-baseline justify-between gap-2 sm:mt-5 sm:gap-4">
@@ -141,7 +141,7 @@ function Viewer({
   }, [go, onClose]);
 
   const pill =
-    "flex h-11 items-center justify-center rounded-full bg-branco/10 px-5 label text-[0.95rem] text-branco transition-colors hover:bg-branco/20";
+    "press flex h-11 items-center justify-center rounded-full bg-branco/10 px-5 label text-[0.95rem] text-branco transition-colors hover:bg-branco/20";
 
   return (
     <div

@@ -45,7 +45,7 @@ export default function CaseCarousel({ slides, label }: { slides: string[]; labe
   };
 
   const button =
-    "flex h-11 w-11 items-center justify-center rounded-full border border-branco/20 text-branco transition-colors hover:bg-branco hover:text-preto disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-branco";
+    "press flex h-11 w-11 items-center justify-center rounded-full border border-branco/20 text-branco transition-colors hover:bg-branco hover:text-preto disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-branco";
 
   return (
     <div>

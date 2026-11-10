@@ -19,7 +19,7 @@ export default function FeaturedCase({ lang, id, className }: { lang: Locale; id
             alt={papoDom.title}
             fill
             sizes="(min-width: 768px) 22rem, 90vw"
-            className="object-cover transition-transform duration-[1.2s] ease-[var(--ease-cine)] group-hover:scale-[1.04]"
+            className="object-cover transition-transform duration-[1.2s] ease-[var(--ease-cine)] group-hover:scale-[1.03]"
           />
         </div>
         <div>

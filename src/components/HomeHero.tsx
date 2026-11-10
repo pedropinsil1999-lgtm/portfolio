@@ -7,7 +7,7 @@ import { scriptGlow, scriptHidden, scriptRevealStyle, scriptSettle, scriptShown 
 import { NOITE } from "@/components/ui/CardBackdrop";
 import { MeshGradient } from "@/components/ui/mesh-gradient";
 import { GRAIN } from "@/lib/grain";
-import HeroPortrait from "@/components/HeroPortrait";
+import HeroBadge from "@/components/HeroBadge";
 import { useHeroReveal } from "@/lib/useHeroReveal";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -139,11 +139,11 @@ export default function HomeHero() {
         data-theme="preto"
         className="relative flex min-h-svh flex-col overflow-x-clip justify-end px-6 pb-10 pt-32 md:px-12 md:pb-12"
       >
-        <HeroPortrait />
+        <HeroBadge />
 
         {/* On phones the kicker leads, above the portrait. */}
         <div className="-order-1 mb-6 overflow-hidden md:order-none md:mb-0">
-          <p data-reveal className="label text-[0.95rem] text-branco/60">
+          <p data-reveal className="label max-w-[52%] text-[0.95rem] text-branco/60 md:max-w-none">
             {t.hero.kicker}
           </p>
         </div>

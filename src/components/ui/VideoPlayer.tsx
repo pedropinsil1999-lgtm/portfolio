@@ -107,7 +107,7 @@ export default function VideoPlayer({
   };
 
   const showBar = started && (!playing || !idle);
-  const icon = "flex h-9 w-9 items-center justify-center rounded-full text-branco/85 transition-colors hover:bg-branco/15 hover:text-branco";
+  const icon = "press flex h-9 w-9 items-center justify-center rounded-full text-branco/85 transition-colors hover:bg-branco/15 hover:text-branco";
 
   return (
     <div

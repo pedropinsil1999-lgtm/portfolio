@@ -161,7 +161,7 @@ export default function StackCards({ cards }: { cards: StackCard[] }) {
               {card.link && (
                 <Link
                   href={card.link.href}
-                  className="group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-5 py-2.5 label text-[0.9rem] md:px-6 md:py-3 md:text-[0.95rem] text-preto transition-colors hover:bg-vermelho hover:text-branco"
+                  className="press group/arrow inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-branco px-5 py-2.5 label text-[0.9rem] md:px-6 md:py-3 md:text-[0.95rem] text-preto transition-colors hover:bg-vermelho hover:text-branco"
                 >
                   {card.link.label}
                   <HoverArrow />

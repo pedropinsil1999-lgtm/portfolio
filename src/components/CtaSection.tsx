@@ -20,7 +20,7 @@ export default function CtaSection({ lang, t }: { lang: Locale; t: Dictionary })
       </h2>
       <Link
         href={`/${lang}/contato`}
-        className="group/arrow mt-12 inline-flex items-center gap-2 rounded-full bg-preto px-8 py-4 label text-base text-branco transition-colors hover:bg-vermelho"
+        className="press group/arrow mt-12 inline-flex items-center gap-2 rounded-full bg-preto px-8 py-4 label text-base text-branco transition-colors hover:bg-vermelho"
       >
         {t.cta.button}
         <HoverArrow />

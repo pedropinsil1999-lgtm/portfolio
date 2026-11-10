@@ -124,7 +124,7 @@ export default function Header() {
             onClick={() => saveLangChoice(other)}
             aria-label={t.nav.switchLanguage}
             data-pill
-            className={`${pill} flex h-11 w-11 items-center justify-center label text-[0.95rem] hover:border-vermelho/60`}
+            className={`press ${pill} flex h-11 w-11 items-center justify-center label text-[0.95rem] hover:border-vermelho/60`}
           >
             {other.toUpperCase()}
           </Link>

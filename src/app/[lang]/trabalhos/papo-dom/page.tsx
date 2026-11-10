@@ -28,7 +28,7 @@ function Head({ label, title, text }: { label: string; title: string; text?: str
 }
 
 const pill =
-  "group/arrow inline-flex items-center gap-2 rounded-full border border-fg/25 px-6 py-3 label text-[0.95rem] text-fg transition-colors hover:bg-fg hover:text-[var(--page-bg)]";
+  "press group/arrow inline-flex items-center gap-2 rounded-full border border-fg/25 px-6 py-3 label text-[0.95rem] text-fg transition-colors hover:bg-fg hover:text-[var(--page-bg)]";
 
 export default async function PapoDomCase({ params }: PageProps<"/[lang]/trabalhos/papo-dom">) {
   const { lang } = await params;

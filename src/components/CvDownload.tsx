@@ -122,7 +122,7 @@ export default function CvDownload() {
               ref={download}
               href={active.href}
               download={active.file}
-              className="group inline-flex items-center gap-3 rounded-full bg-branco px-7 py-4 label text-base text-preto transition-colors hover:bg-vermelho hover:text-branco"
+              className="press group inline-flex items-center gap-3 rounded-full bg-branco px-7 py-4 label text-base text-preto transition-colors hover:bg-vermelho hover:text-branco"
             >
               {t.cv.versions[lang].cta}
               <span

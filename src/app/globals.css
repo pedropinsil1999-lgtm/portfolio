@@ -11,6 +11,7 @@
   --azul-claro: #c2e8ff; /* hairlines and textures (strokes, grid, dots) */
   --azul-medio: #365c73;
   --ease-cine: cubic-bezier(0.76, 0, 0.24, 1);
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
   /* Live page colours, blended on scroll by <ScrollTheme>. */
   --page-bg: var(--preto);
   --page-fg: var(--branco);
@@ -333,5 +334,37 @@ html.viewer-open .site-header {
   ::view-transition-old(.page-swap),
   ::view-transition-new(.page-swap) {
     animation: none;
+  }
+}
+
+/* Tactile buttons (taste skill, motion rules): a 1px lift on hover, a 1px
+   press with a slight squeeze on click. Short and eased out, on the
+   compositor only (translate/scale), never a glow. Unlayered, so it wins
+   over the utility "transition-colors" and keeps the colour fade. */
+.press {
+  transition:
+    color 150ms var(--ease-snap),
+    background-color 150ms var(--ease-snap),
+    border-color 150ms var(--ease-snap),
+    opacity 150ms var(--ease-snap),
+    translate 150ms var(--ease-snap),
+    scale 120ms var(--ease-snap);
+}
+.press:active {
+  translate: 0 1px;
+  scale: 0.985;
+  transition-duration: 90ms;
+}
+@media (hover: hover) and (pointer: fine) {
+  .press:hover:not(:active):not(:disabled) {
+    translate: 0 -1px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .press,
+  .press:active,
+  .press:hover {
+    translate: none;
+    scale: none;
   }
 }

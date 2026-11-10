@@ -53,7 +53,7 @@ export default function SiteShowcase({ items }: { items: Site[] }) {
                 href={site.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 inline-block rounded-full border border-fg/25 px-6 py-3 label text-[0.95rem] text-fg transition-colors hover:bg-fg hover:text-[var(--page-bg)]"
+                className="press mt-6 inline-block rounded-full border border-fg/25 px-6 py-3 label text-[0.95rem] text-fg transition-colors hover:bg-fg hover:text-[var(--page-bg)]"
               >
                 {t.work.openSite}
               </a>

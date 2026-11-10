@@ -13,7 +13,13 @@ export type Dictionary = {
   meta: { title: string; description: string };
   nav: { home: string; work: string; about: string; contact: string; switchLanguage: string };
   intro: { label: string; choose: string; chooseOther: string; enter: string };
-  hero: { kicker: string; tagline: string; scroll: string; hello: string };
+  hero: {
+    kicker: string;
+    tagline: string;
+    scroll: string;
+    hello: string;
+    badge: { label: string; role: string; place: string; skills: string[] };
+  };
   cv: {
     label: string;
     title: string;
@@ -83,6 +89,12 @@ const pt: Dictionary = {
     tagline: "Direção visual, audiovisual e sites que levam à próxima ação.",
     scroll: "Rolar ↓\uFE0E",
     hello: "Oi! Prazer :)",
+    badge: {
+      label: "Portfólio 2026",
+      role: "Designer de Comunicação",
+      place: "Resende, RJ",
+      skills: ["Direção visual", "Audiovisual", "Sites"],
+    },
   },
   cv: {
     label: "Currículo",
@@ -217,6 +229,12 @@ const en: Dictionary = {
     tagline: "Visual direction, film and websites that lead to the next step.",
     scroll: "Scroll ↓\uFE0E",
     hello: "Hi! Nice to meet you :)",
+    badge: {
+      label: "Portfolio 2026",
+      role: "Communication Designer",
+      place: "Resende, Brazil",
+      skills: ["Visual direction", "Film", "Websites"],
+    },
   },
   cv: {
     label: "Résumé",
