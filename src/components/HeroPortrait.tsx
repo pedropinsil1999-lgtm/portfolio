@@ -53,7 +53,7 @@ export default function HeroPortrait() {
           <div className="rounded-t-full rounded-b-[2rem] border border-branco/25 p-2 md:p-2.5">
             <div className="relative aspect-[5/6] overflow-hidden rounded-t-full rounded-b-[1.6rem] bg-grafite">
               <Image
-                src="/hero/pedro-graded.webp"
+                src="/hero/pedro-natural.webp"
                 alt="Pedro Henrique"
                 fill
                 priority
@@ -61,13 +61,13 @@ export default function HeroPortrait() {
                 className="object-cover object-[50%_20%]"
               />
               {/* The light grey wall would read as a bright block on the navy page:
-                  a vignette in the page navy lets it fall away around the face,
-                  and the base darkens so the name reads over the photo. */}
+                  a strong vignette in the page navy lets it fall away around the
+                  face (option 5C). */}
               <div
                 className="absolute inset-0"
                 style={{
                   background:
-                    "radial-gradient(ellipse 62% 58% at 42% 34%, transparent 30%, rgb(4 42 65 / 0.55) 72%, rgb(4 42 65 / 0.9) 100%), linear-gradient(to top, rgb(4 42 65 / 0.85), transparent 45%)",
+                    "radial-gradient(68% 68% at 45% 32%, transparent 30%, rgb(4 42 65 / 0.9) 100%)",
                 }}
               />
             </div>
