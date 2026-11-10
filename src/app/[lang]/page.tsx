@@ -22,18 +22,16 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
     { preview: { kind: "art", images: art("adolfz", "its-your-time", "bic") }, link: work("direcao-visual") },
     { preview: { kind: "reel", label: t.services.reelSoon }, link: work("audiovisual") },
     { preview: { kind: "site", images: sites.map((s) => s.image) }, link: work("sites") },
-    // Photos of the pieces in place at ArcelorMittal, with me at the plant
-    // in front (banner, safety panel, SIPAT).
+    // Me at the plant in front, two pieces in place on either side.
     {
       preview: {
         kind: "art",
         images: [
           "/work/ambientacao-aniversario.webp",
-          "/work/ambientacao-acidente-zero.webp",
           "/work/usina-pedro.webp",
-          "/work/ambientacao-sipat.webp",
+          "/work/ambientacao-acidente-zero.webp",
         ],
-        positions: ["50% 45%", "50% 55%", "50% 30%", "50% 50%"],
+        positions: ["50% 42%", "50% 26%", "50% 52%"],
       },
       link: work("ambientacoes"),
     },
