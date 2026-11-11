@@ -7,8 +7,8 @@ import { prefersReducedMotion, whenIntroDone } from "@/lib/motion";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { BadgeScene } from "@/components/badge/scene";
 
-/** A still of the 3D badge at rest, rendered from the same scene. */
-const STILL = "/hero/cracha.webp";
+/** A still of the 3D badge at rest, rendered from the same scene (one per language). */
+const STILL = { pt: "/hero/cracha.webp", en: "/hero/cracha-en.webp" };
 
 const wantsScene = () =>
   window.matchMedia("(min-width: 768px)").matches && !prefersReducedMotion();
@@ -29,7 +29,7 @@ export default function HeroBadge() {
   const scene = useRef<BadgeScene | null>(null);
   const loading = useRef<Promise<BadgeScene | null> | null>(null);
   const progress = useRef(0);
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const copy = t.hero.badge;
 
   // Build the 3D scene early (at idle, during the intro) so it is ready to drop in.
@@ -153,7 +153,7 @@ export default function HeroBadge() {
         <div data-badge className="absolute inset-0">
           <div data-badge-swing className="absolute inset-0 origin-top">
             <div ref={still} className="absolute inset-0">
-              <Image src={STILL} alt="" fill priority sizes="(min-width: 768px) 40vw, 104vw" className="object-contain" />
+              <Image src={STILL[lang]} alt="" fill priority sizes="(min-width: 768px) 40vw, 104vw" className="object-contain" />
             </div>
             <div ref={stage} className="absolute inset-0" />
           </div>
