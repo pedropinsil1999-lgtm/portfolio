@@ -16,9 +16,9 @@ const wantsScene = () =>
 /**
  * Hero object: an acrylic ID badge with Pedro's photo, hanging from a
  * lanyard that runs up off the screen.
- * - Desktop: a real 3D scene (three.js) with the strap simulated as a rope.
- *   It drops in on its strap once the intro clears, and scrolling turns it
- *   round to its back. It only renders while something moves.
+ * - Desktop: a real 3D scene (three.js) with the two straps simulated as
+ *   ropes. It drops in once the intro clears, and scrolling turns it round
+ *   to its back. It only renders while something moves.
  * - Phones (and if WebGL is unavailable): a still rendered from that same
  *   scene, which drops in and swings to rest.
  */
@@ -54,7 +54,7 @@ export default function HeroBadge() {
             scene.current = s;
             s.setTurn(progress.current);
             if (process.env.NODE_ENV === "development") {
-              (window as unknown as { __badgeSnapshot?: BadgeScene["snapshot"] }).__badgeSnapshot = s.snapshot;
+              (window as unknown as { __badge?: BadgeScene }).__badge = s;
             }
             resolve(s);
           })
@@ -92,7 +92,7 @@ export default function HeroBadge() {
           .fromTo("[data-badge-swing]", { yPercent: -70 }, { yPercent: 0, duration: 0.9, ease: "back.out(1.2)" }, 0)
           .fromTo(
             "[data-badge-swing]",
-            { rotate: 9 },
+            { rotate: 6 },
             { rotate: 0, duration: 2.6, ease: "elastic.out(1, 0.32)" },
             0.15,
           );
@@ -145,21 +145,23 @@ export default function HeroBadge() {
     <div
       ref={root}
       aria-hidden="true"
-      // A 3:4 stage hung from the top of the hero, wide enough for the swing;
-      // the strap leaves through its top edge.
-      className="pointer-events-none absolute right-[-20vw] top-0 aspect-[3/4] w-[104vw] md:right-[-2%] md:w-[clamp(20rem,40vw,40rem)]"
+      // A square stage hung from the top of the hero, three badges wide so the
+      // swing never reaches its edges; the straps leave through its top. It
+      // sits in front of the name, with its centre at 66% (phones) or 80% of
+      // the width.
+      className="pointer-events-none absolute right-[-38vw] top-0 z-20 aspect-square w-[144vw] md:right-[calc(20vw-clamp(15rem,30vw,30rem))] md:w-[clamp(30rem,60vw,60rem)]"
     >
       <div data-badge-fade className="absolute inset-0 will-change-transform">
         <div data-badge className="absolute inset-0">
           <div data-badge-swing className="absolute inset-0 origin-top">
             <div ref={still} className="absolute inset-0">
-              <Image src={STILL[lang]} alt="" fill priority sizes="(min-width: 768px) 40vw, 104vw" className="object-contain" />
+              <Image src={STILL[lang]} alt="" fill priority sizes="(min-width: 768px) 60vw, 144vw" className="object-contain" />
             </div>
             <div ref={stage} className="absolute inset-0" />
           </div>
           <span
             data-hello
-            className="absolute right-[67%] top-[47%] z-20 whitespace-nowrap rounded-full bg-branco px-4 py-2 label text-[0.95rem] text-preto shadow-[0_12px_30px_-10px_rgba(0,0,0,0.6)] md:text-base"
+            className="absolute right-[63%] top-[42%] z-20 whitespace-nowrap rounded-full bg-branco px-4 py-2 label text-[0.95rem] text-preto shadow-[0_12px_30px_-10px_rgba(0,0,0,0.6)] md:text-base"
           >
             {t.hero.hello}
           </span>
