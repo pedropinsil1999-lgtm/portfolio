@@ -89,12 +89,10 @@ body {
 .intro {
   display: none;
 }
-html[data-intro="play"] .intro,
-html[data-intro="resume"] .intro {
+html[data-intro="play"] .intro {
   display: block;
 }
-html[data-intro="play"],
-html[data-intro="resume"] {
+html[data-intro="play"] {
   overflow: hidden;
 }
 /* Own view-transition layer on top of everything, so a transition that runs
@@ -112,34 +110,6 @@ html[data-intro="resume"] {
 }
 ::view-transition-new(intro) {
   animation: none;
-}
-
-/* Language chooser: each half of the curtain holds one language. The word is
-   an outline; hovering/focusing fills it outward from the horizon line. */
-.lang-word {
-  color: transparent;
-  -webkit-text-stroke: 1px rgb(194 232 255 / 0.4);
-}
-.lang-fill {
-  color: var(--branco);
-  -webkit-text-stroke: 0;
-  transition: clip-path 0.7s var(--ease-cine);
-}
-/* Insets overshoot the box (-25%) so accents and descenders aren't clipped. */
-.lang-option[data-half="top"] .lang-fill {
-  clip-path: inset(125% 0 -25% 0);
-}
-.lang-option[data-half="bottom"] .lang-fill {
-  clip-path: inset(-25% 0 125% 0);
-}
-.lang-option:is(:hover, :focus-visible, [data-picked="true"]) .lang-fill {
-  clip-path: inset(-25% 0 -25% 0);
-}
-.lang-option {
-  transition: opacity 0.5s var(--ease-cine);
-}
-.lang-chooser[data-hover] .lang-option:not(:hover, :focus-visible) {
-  opacity: 0.35;
 }
 
 /* Contact links: outline words that fill left-to-right on hover/focus. */

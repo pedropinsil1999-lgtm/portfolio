@@ -127,15 +127,39 @@ export default function HeroBadge() {
           scene.current?.setTurn(self.progress);
         },
       });
-      gsap
-        .timeline({
-          scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true, invalidateOnRefresh: true },
-        })
-        // It trails the page a little, so it is still in view as it turns.
-        .to("[data-badge-fade]", { y: () => window.innerHeight * 0.4, ease: "none", duration: 1 }, 0)
-        .to("[data-hello]", { autoAlpha: 0, duration: 0.15 }, 0.05)
-        // Gone before the hero has left, so it never reaches an edge.
-        .to("[data-badge-fade]", { opacity: 0, ease: "power1.in", duration: 0.35 }, 0.5);
+      gsap.to("[data-hello]", {
+        autoAlpha: 0,
+        ease: "none",
+        scrollTrigger: { trigger: hero, start: "top top", end: () => `+=${window.innerHeight * 0.15}`, scrub: true },
+      });
+      // It stays put on screen while the hero scrolls past, until the résumé
+      // card has come up over it; then it is hidden behind the card.
+      const cover = document.querySelector<HTMLElement>("[data-cv-card]");
+      if (cover) {
+        gsap.to("[data-badge-fade]", {
+          // Exactly the scroll between the two triggers, so it holds still on screen.
+          y: () => cover.getBoundingClientRect().top - (hero?.getBoundingClientRect().top ?? 0),
+          ease: "none",
+          scrollTrigger: {
+            trigger: hero,
+            start: "top top",
+            endTrigger: cover,
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
+        const hidden = (on: boolean) => {
+          gsap.set("[data-badge]", { visibility: on ? "hidden" : "inherit" });
+          scene.current?.setActive(!on);
+        };
+        ScrollTrigger.create({
+          trigger: cover,
+          start: "top top",
+          onEnter: () => hidden(true),
+          onLeaveBack: () => hidden(false),
+        });
+      }
       return whenIntroDone(play);
     },
     { scope: root },

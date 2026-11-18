@@ -223,30 +223,6 @@ export function drawStrap() {
   return { color, bump, repeat: h / 128 };
 }
 
-/** The sewn tab where the two straps meet: a box stitch with a cross. */
-export function drawTab() {
-  const [color, c] = canvas(128, 128);
-  const [bump, bc] = canvas(128, 128);
-  weave(c, 128, 128, false);
-  weave(bc, 128, 128, true);
-  for (const [ctx, stroke] of [
-    [c, "rgba(234, 255, 255, 0.55)"],
-    [bc, "rgba(255, 255, 255, 0.9)"],
-  ] as const) {
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = 3;
-    ctx.setLineDash([7, 4]);
-    ctx.strokeRect(22, 22, 84, 84);
-    ctx.beginPath();
-    ctx.moveTo(22, 22);
-    ctx.lineTo(106, 106);
-    ctx.moveTo(106, 22);
-    ctx.lineTo(22, 106);
-    ctx.stroke();
-  }
-  return { color, bump };
-}
-
 /**
  * Wear on the acrylic, seen only where light catches it.
  * Red: hairline scratches and dust. Green: soft smudges from handling.

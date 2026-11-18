@@ -80,7 +80,11 @@ export default function CvDownload() {
 
   return (
     <section className="px-6 pt-16 md:px-12 md:pt-24">
-      <div className="relative isolate grid items-center gap-14 overflow-hidden rounded-[2rem] border border-branco/12 p-6 md:grid-cols-2 md:gap-12 md:p-14">
+      {/* Opaque and above the hero: the hero badge disappears behind it. */}
+      <div
+        data-cv-card
+        className="relative isolate z-30 grid items-center gap-14 overflow-hidden rounded-[2rem] border border-branco/12 bg-[var(--page-bg)] p-6 md:grid-cols-2 md:gap-12 md:p-14"
+      >
         <CardBackdrop seed={7} />
         <div>
           <p className="label text-[0.95rem] text-branco/50">{t.cv.label}</p>

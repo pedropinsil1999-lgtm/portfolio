@@ -1,56 +1,37 @@
 import {
-  AddEquation,
   BackSide,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
   Color,
-  CustomBlending,
   CylinderGeometry,
   DirectionalLight,
   DoubleSide,
   ExtrudeGeometry,
   Group,
-  HalfFloatType,
   Mesh,
   MeshBasicMaterial,
   MeshPhysicalMaterial,
   MeshStandardMaterial,
   NeutralToneMapping,
-  NoBlending,
-  OneFactor,
   Path,
   PerspectiveCamera,
   PlaneGeometry,
   PMREMGenerator,
   RepeatWrapping,
   Scene,
-  ShaderMaterial,
   Shape,
   SphereGeometry,
   SRGBColorSpace,
   TorusGeometry,
-  UnsignedByteType,
   Vector3,
   WebGLRenderer,
-  WebGLRenderTarget,
   type Material,
   type Texture,
 } from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { FullScreenQuad } from "three/examples/jsm/postprocessing/Pass.js";
 import { gsap } from "@/lib/gsap";
-import {
-  drawPrints,
-  drawShadow,
-  drawStrap,
-  drawTab,
-  drawWear,
-  PRINT_H,
-  PRINT_RADIUS,
-  PRINT_W,
-  type BadgeCopy,
-} from "./prints";
+import { drawPrints, drawShadow, drawStrap, drawWear, PRINT_H, PRINT_RADIUS, PRINT_W, type BadgeCopy } from "./prints";
 
 /*
  * World units: the acrylic plate is 1 wide (about 8.6 cm in real life).
@@ -70,9 +51,9 @@ const BEVEL = 0.006;
 const SLOT_Y = PLATE_H / 2 - 0.085;
 const SLOT_H = 0.026; // half height of the slot
 
-// Hardware, top to bottom: sewn tab, eye ring, swivel, snap hook, plate.
-const TAB = 0.14;
-const JOINT = 0.182; // from the strap end down to the swivel
+// Hardware, top to bottom: steel crimp on the strap ends, ring, swivel,
+// snap hook, plate.
+const JOINT = 0.125; // from the strap end down to the swivel
 const HOOK_Y = -0.103;
 const HOOK_R = 0.042;
 const HOOK_STRETCH = 1.5;
@@ -88,19 +69,20 @@ const ANCHOR_START = { x: 0.2, y: 3.4 };
 const DROP = 1.15; // seconds the straps take to come down
 
 // Physics, tuned to the period of a real badge on a long lanyard.
-const N = 20; // points per strap
+const N = 20; // simulated points per strap
+const SUB = 4; // drawn points per simulated segment (a smooth curve through them)
+const M = (N - 1) * SUB + 1;
 const SEG = Math.hypot(SPREAD, ANCHOR_Y - END_REST_Y) / (N - 1);
 const GRAVITY = 40;
 const STEP = 1 / 120;
-const STRAP_W = 0.13;
+const STRAP_W = 0.12;
+const STRAP_T = 0.006; // webbing thickness
 // At rest it hangs a little turned, the way a badge does, which shows its thickness.
 const REST_YAW = -0.32;
 
-// Motion blur: how long the "shutter" stays open, in seconds (0.6 of a 60 Hz frame).
-const SHUTTER = 0.6 / 60;
-const MAX_SAMPLES = 5;
-const MAX_BLUR = 11; // pixels
-const PIXEL_BUDGET = 1.9e6;
+// Drawing-buffer size: sharp on retina, but never more pixels than this.
+const MAX_RATIO = 1.75;
+const PIXEL_BUDGET = 1.6e6;
 
 export type BadgeScene = {
   canvas: HTMLCanvasElement;
@@ -237,7 +219,11 @@ function plateGeometry() {
   return g;
 }
 
-const QUAD_VERTEX = "varying vec2 vUv;\nvoid main() {\n  vUv = uv;\n  gl_Position = vec4(position.xy, 0.0, 1.0);\n}";
+/** Catmull-Rom through four points, at t in [0, 1] between b and c. */
+function spline(a: number, b: number, c: number, d: number, t: number) {
+  const t2 = t * t, t3 = t2 * t;
+  return 0.5 * (2 * b + (c - a) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (3 * b - a - 3 * c + d) * t3);
+}
 
 export async function createBadgeScene(
   host: HTMLElement,
@@ -246,9 +232,8 @@ export async function createBadgeScene(
 ): Promise<BadgeScene> {
   const { front, back } = await drawPrints(copy);
   const strap = drawStrap();
-  const tab = drawTab();
 
-  const renderer = new WebGLRenderer({ antialias: false, alpha: true });
+  const renderer = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = NeutralToneMapping;
   renderer.setClearColor(0x000000, 0);
@@ -265,6 +250,7 @@ export async function createBadgeScene(
       (o.material as Material).dispose();
     }
   });
+  pmrem.dispose();
   scene.environment = env;
   const key = new DirectionalLight(0xffffff, 3.4);
   key.position.set(-2, 2.5, 3);
@@ -291,52 +277,45 @@ export async function createBadgeScene(
   shadow.renderOrder = -1;
   scene.add(shadow);
 
-  // The sewn tab and its eye ring follow the straps; the swivel below it
-  // lets the hook and the plate turn freely.
   const steel = new MeshStandardMaterial({ color: 0xe3ebef, metalness: 1, roughness: 0.18, envMapIntensity: 1.6 });
-  const fabric = (map: Texture, bumpMap: Texture) =>
-    new MeshPhysicalMaterial({
-      map,
-      bumpMap,
-      bumpScale: 2.2,
-      roughness: 0.95,
-      sheen: 1,
-      sheenRoughness: 0.55,
-      sheenColor: new Color(0.35, 0.55, 0.75),
-      envMapIntensity: 0.7,
-      side: DoubleSide,
-    });
 
-  const tabGroup = new Group();
-  tabGroup.rotation.order = "ZXY";
-  scene.add(tabGroup);
-  const tabMesh = new Mesh(
-    new RoundedBoxGeometry(STRAP_W + 0.012, TAB, 0.02, 3, 0.007),
-    fabric(texture(tab.color), texture(tab.bump, false)),
-  );
-  tabMesh.position.y = -TAB / 2;
-  tabGroup.add(tabMesh);
-  const eye = new Mesh(new TorusGeometry(0.032, 0.007, 12, 40), steel);
-  eye.position.y = -0.15;
-  tabGroup.add(eye);
+  // The strap ends are clamped in a steel crimp with a ring below it; the
+  // crimp follows the straps, the swivel under the ring lets the plate turn.
+  const crimpGroup = new Group();
+  crimpGroup.rotation.order = "ZXY";
+  scene.add(crimpGroup);
+  const crimp = new Mesh(new RoundedBoxGeometry(STRAP_W * 1.3, 0.07, 0.032, 3, 0.012), steel);
+  crimp.position.y = -0.012;
+  crimpGroup.add(crimp);
+  // Two pressed ribs across the crimp.
+  for (const y of [0.004, -0.028]) {
+    const rib = new Mesh(new CylinderGeometry(0.004, 0.004, STRAP_W * 1.24, 8), steel);
+    rib.rotation.z = Math.PI / 2;
+    rib.position.set(0, y, 0.016);
+    crimpGroup.add(rib);
+  }
+  // Hooked into the crimp above and the swivel below.
+  const ring = new Mesh(new TorusGeometry(0.0325, 0.0065, 12, 36), steel);
+  ring.position.y = -0.085;
+  crimpGroup.add(ring);
 
   const card = new Group();
   card.rotation.order = "ZXY";
   scene.add(card);
-  const swivel = new Mesh(new CylinderGeometry(0.017, 0.02, 0.04, 24), steel);
+  const swivel = new Mesh(new CylinderGeometry(0.017, 0.02, 0.04, 20), steel);
   swivel.position.y = -0.02;
   card.add(swivel);
-  const collar = new Mesh(new CylinderGeometry(0.023, 0.023, 0.008, 24), steel);
+  const collar = new Mesh(new CylinderGeometry(0.023, 0.023, 0.008, 20), steel);
   collar.position.y = -0.006;
   card.add(collar);
-  const hookGeo = new TorusGeometry(HOOK_R, HOOK_TUBE, 16, 56);
+  const hookGeo = new TorusGeometry(HOOK_R, HOOK_TUBE, 14, 48);
   hookGeo.scale(1, HOOK_STRETCH, 1);
   const hook = new Mesh(hookGeo, steel);
   hook.rotation.y = Math.PI / 2;
   hook.position.y = HOOK_Y;
   card.add(hook);
   // The gate of the snap hook: a short sleeve on its front run.
-  const gate = new Mesh(new CylinderGeometry(HOOK_TUBE * 1.35, HOOK_TUBE * 1.35, 0.05, 16), steel);
+  const gate = new Mesh(new CylinderGeometry(HOOK_TUBE * 1.35, HOOK_TUBE * 1.35, 0.05, 12), steel);
   gate.position.set(0, HOOK_Y + 0.012, HOOK_R);
   card.add(gate);
 
@@ -375,24 +354,36 @@ export async function createBadgeScene(
   glass.renderOrder = 2;
   plate.add(glass);
 
-  // The straps: two ribbons, each along its own simulated rope.
+  // --- The straps: flat webbing with a real thickness ----------------------
+  // Each drawn cross-section is a thin rectangle: front, right edge, back,
+  // left edge (8 vertices, so the edges stay crisp).
   const strapTex = texture(strap.color);
   const strapBump = texture(strap.bump, false);
   strapTex.wrapS = strapTex.wrapT = strapBump.wrapS = strapBump.wrapT = RepeatWrapping;
-  const strapMaterial = fabric(strapTex, strapBump);
+  // Satin polyester: a soft sheen running along the strap, not a flat print.
+  const strapMaterial = new MeshStandardMaterial({
+    map: strapTex,
+    bumpMap: strapBump,
+    bumpScale: 1.4,
+    roughness: 0.58,
+    envMapIntensity: 0.85,
+    side: DoubleSide,
+  });
+  const length = SEG * (N - 1);
+  const vAt = (i: number) => ((M - 1 - i) / (M - 1)) * (length / (STRAP_W * strap.repeat));
   const strands = [0, 1].map(() => {
     const geo = new BufferGeometry();
-    // Three vertices across, the middle one set back: webbing is slightly cupped.
-    const verts = new Float32Array(N * 3 * 3);
-    const uvs = new Float32Array(N * 3 * 2);
+    const verts = new Float32Array(M * 8 * 3);
+    const uvs = new Float32Array(M * 8 * 2);
     const idx: number[] = [];
-    for (let i = 0; i < N; i++) {
-      const v = ((N - 1 - i) * SEG) / (STRAP_W * strap.repeat);
-      uvs.set([0, v, 0.5, v, 1, v], i * 6);
-      if (i < N - 1) {
-        for (let c = 0; c < 2; c++) {
-          const a = i * 3 + c;
-          idx.push(a, a + 1, a + 3, a + 1, a + 4, a + 3);
+    for (let i = 0; i < M; i++) {
+      const v = vAt(i);
+      // front 0..1, right edge, back 0..1 (mirrored), left edge
+      uvs.set([0, v, 1, v, 0.97, v, 0.99, v, 1, v, 0, v, 0.01, v, 0.03, v], i * 16);
+      if (i < M - 1) {
+        for (let f = 0; f < 4; f++) {
+          const a = i * 8 + f * 2;
+          idx.push(a, a + 8, a + 1, a + 1, a + 8, a + 9);
         }
       }
     }
@@ -405,7 +396,7 @@ export async function createBadgeScene(
     return { geo, verts };
   });
 
-  // --- Physics ---------------------------------------------------------
+  // --- Physics -------------------------------------------------------------
   // Particles: each strap from its anchor down, sharing the last one (the end).
   const END = 2 * (N - 1);
   const index = (strand: number, i: number) => (i === N - 1 ? END : strand * (N - 1) + i);
@@ -438,6 +429,17 @@ export async function createBadgeScene(
   const easeY = gsap.parseEase("back.out(1.25)");
 
   const tmp = new Vector3();
+  /** Pulls (or, with `push`, pushes) two particles toward a distance. */
+  const constrain = (ia: number, ib: number, rest: number, push: boolean, stiffness: number) => {
+    const w = inv[ia] + inv[ib];
+    if (!w) return;
+    const d = tmp.subVectors(p[ib], p[ia]);
+    const len = d.length() || 1e-6;
+    if (push ? len >= rest : len <= rest) return;
+    d.multiplyScalar(((len - rest) / len / w) * stiffness);
+    p[ia].addScaledVector(d, inv[ia]);
+    p[ib].addScaledVector(d, -inv[ib]);
+  };
   const stepPhysics = (dt: number) => {
     if (dropT >= 0 && dropT < DROP) {
       dropT = Math.min(DROP, dropT + dt);
@@ -447,40 +449,32 @@ export async function createBadgeScene(
     for (let s = 0; s < 2; s++) p[index(s, 0)].set(anchorX(s), ANCHOR_Y + anchor.y, 0);
     for (let i = 0; i <= END; i++) {
       if (!inv[i]) continue;
-      // Webbing is limp: it loses its own motion quickly. The badge keeps swinging.
-      const v = tmp.subVectors(p[i], prev[i]).multiplyScalar(i === END ? 0.9965 : 0.985);
+      // Webbing is light and loses its own motion quickly; the badge keeps swinging.
+      const v = tmp.subVectors(p[i], prev[i]).multiplyScalar(i === END ? 0.994 : 0.982);
       prev[i].copy(p[i]);
       p[i].add(v);
       p[i].y -= GRAVITY * dt * dt;
     }
-    for (let k = 0; k < 12; k++) {
+    for (let k = 0; k < 10; k++) {
       for (let s = 0; s < 2; s++) {
-        for (let i = 0; i < N - 1; i++) {
-          const ia = index(s, i), ib = index(s, i + 1);
-          const w = inv[ia] + inv[ib];
-          const d = tmp.subVectors(p[ib], p[ia]);
-          const len = d.length() || 1e-6;
-          // Webbing does not push back: it only pulls when stretched, so a
-          // strap that loses its load goes slack and bows.
-          if (len <= SEG) continue;
-          d.multiplyScalar((len - SEG) / len / w);
-          p[ia].addScaledVector(d, inv[ia]);
-          p[ib].addScaledVector(d, -inv[ib]);
-        }
+        // Webbing does not push back along its length: it only pulls when
+        // stretched, so a strap that loses its load goes slack and bows.
+        for (let i = 0; i < N - 1; i++) constrain(index(s, i), index(s, i + 1), SEG, false, 1);
+        // But it resists folding sharply: bows are soft curves, never kinks.
+        for (let i = 0; i < N - 2; i++) constrain(index(s, i), index(s, i + 2), SEG * 1.75, true, 0.35);
       }
     }
     // The plate is a pendulum hanging from the swivel, pushed by how the end
-    // of the straps accelerates.
+    // of the straps accelerates. Bounded, so a snap tilts it but never flips it.
     endVel.subVectors(p[END], prev[END]).divideScalar(dt);
-    // Bounded, so a snap of the straps tilts the plate but never flips it.
     const bound = (a: number) => Math.max(-90, Math.min(90, a));
     const ax = bound((endVel.x - lastEndVel.x) / dt);
     const ay = bound((endVel.y - lastEndVel.y) / dt);
     const az = bound((endVel.z - lastEndVel.z) / dt);
     lastEndVel.copy(endVel);
     const g = Math.max(GRAVITY * 0.4, GRAVITY + ay);
-    rollV += (-(g / HANG) * Math.sin(roll) - (ax / HANG) * Math.cos(roll) - 1.3 * rollV) * dt;
-    pitchV += (-(g / HANG) * Math.sin(pitch) + (az / HANG) * Math.cos(pitch) - 1.3 * pitchV) * dt;
+    rollV += (-(g / HANG) * Math.sin(roll) - (ax / HANG) * Math.cos(roll) - 2 * rollV) * dt;
+    pitchV += (-(g / HANG) * Math.sin(pitch) + (az / HANG) * Math.cos(pitch) - 2 * pitchV) * dt;
     roll += rollV * dt;
     pitch += pitchV * dt;
     // The hook only lets it swing so far.
@@ -494,160 +488,78 @@ export async function createBadgeScene(
     yaw += yawV * dt;
   };
 
-  // --- Pose: the last two frames, blended for the motion blur ------------
-  type Pose = { pts: Float32Array; roll: number; pitch: number; yaw: number };
-  const pose = (): Pose => ({ pts: new Float32Array((END + 1) * 3), roll: 0, pitch: 0, yaw: REST_YAW });
-  let from = pose(), to = pose();
-  const capture = (out: Pose) => {
-    for (let i = 0; i <= END; i++) p[i].toArray(out.pts, i * 3);
-    out.roll = roll;
-    out.pitch = pitch;
-    out.yaw = yaw;
-  };
-  const q = p.map(() => new Vector3());
+  // --- Meshes from the simulation -------------------------------------------
+  const pts = Array.from({ length: N + 2 }, () => new Vector3());
+  const curve = Array.from({ length: M }, () => new Vector3());
   const side = new Vector3();
   const tangent = new Vector3();
   const normal = new Vector3();
   const dir = new Vector3();
   const centre = new Vector3();
-  const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-  const applyPose = (t: number) => {
-    for (let i = 0; i <= END; i++) {
-      q[i].set(
-        mix(from.pts[i * 3], to.pts[i * 3], t),
-        mix(from.pts[i * 3 + 1], to.pts[i * 3 + 1], t),
-        mix(from.pts[i * 3 + 2], to.pts[i * 3 + 2], t),
-      );
-    }
-    const r = mix(from.roll, to.roll, t), pi = mix(from.pitch, to.pitch, t), y = mix(from.yaw, to.yaw, t);
-    const end = q[END];
+  const update = () => {
+    const end = p[END];
 
-    // The tab lines up with the straps above it.
-    dir.copy(end).multiplyScalar(2).sub(q[index(0, N - 3)]).sub(q[index(1, N - 3)]).normalize();
-    tabGroup.position.copy(end);
-    tabGroup.rotation.set(Math.atan2(-dir.z, -dir.y) * 0.6 + pi * 0.3, 0, Math.atan2(dir.x, -dir.y) * 0.6 + r * 0.3);
-    tabGroup.updateMatrixWorld();
-    card.position.set(0, -JOINT, 0).applyMatrix4(tabGroup.matrixWorld);
-    card.rotation.set(pi, y, r);
+    // The crimp lines up with the straps above it.
+    dir.copy(end).multiplyScalar(2).sub(p[index(0, N - 3)]).sub(p[index(1, N - 3)]).normalize();
+    crimpGroup.position.copy(end);
+    crimpGroup.rotation.set(
+      Math.atan2(-dir.z, -dir.y) * 0.6 + pitch * 0.3,
+      0,
+      Math.atan2(dir.x, -dir.y) * 0.6 + roll * 0.3,
+    );
+    crimpGroup.updateMatrixWorld();
+    card.position.set(0, -JOINT, 0).applyMatrix4(crimpGroup.matrixWorld);
+    card.rotation.set(pitch, yaw, roll);
     card.updateMatrixWorld();
-    sweep.value = -0.25 + (y - REST_YAW) * 0.55 + r * 0.5 + pi * 0.5;
+    sweep.value = -0.25 + (yaw - REST_YAW) * 0.55 + roll * 0.5 + pitch * 0.5;
 
     // The shadow falls down and to the right of the plate, thinner as it turns.
     centre.set(0, -HANG, 0).applyMatrix4(card.matrixWorld);
     shadow.position.set(centre.x + 0.15, centre.y - 0.17, -0.7);
-    shadow.rotation.z = r;
-    shadow.scale.x = Math.max(Math.abs(Math.cos(y)), 0.1);
+    shadow.rotation.z = roll;
+    shadow.scale.x = Math.max(Math.abs(Math.cos(yaw)), 0.1);
 
     for (let s = 0; s < 2; s++) {
+      // A smooth curve through the simulated points (ends extended straight).
+      for (let i = 0; i < N; i++) pts[i + 1].copy(p[index(s, i)]);
+      pts[0].copy(pts[1]).multiplyScalar(2).sub(pts[2]);
+      pts[N + 1].copy(pts[N]).multiplyScalar(2).sub(pts[N - 1]);
+      for (let j = 0; j < M; j++) {
+        const seg = Math.min(N - 2, Math.floor(j / SUB));
+        const t = (j - seg * SUB) / SUB;
+        const [a, b, c, d] = [pts[seg], pts[seg + 1], pts[seg + 2], pts[seg + 3]];
+        curve[j].set(spline(a.x, b.x, c.x, d.x, t), spline(a.y, b.y, c.y, d.y, t), spline(a.z, b.z, c.z, d.z, t));
+      }
       const { geo, verts } = strands[s];
-      for (let i = 0; i < N; i++) {
-        const a = q[index(s, Math.max(0, i - 1))], b = q[index(s, Math.min(N - 1, i + 1))];
-        tangent.subVectors(b, a).normalize();
-        const u = i / (N - 1);
-        side.set(1, 0, 0).addScaledVector(tangent, -tangent.x).normalize();
-        normal.crossVectors(side, tangent);
-        // Webbing keeps a memory of how it was rolled up: it never hangs
-        // as a flat ruler, it waves and twists a little along its length.
-        const ease = Math.sin(Math.PI * u);
-        const twist = 0.45 * ease * Math.sin(5.3 * u + s * 2.1);
-        side.multiplyScalar(Math.cos(twist)).addScaledVector(normal, Math.sin(twist));
-        normal.crossVectors(side, tangent);
-        const wave = 0.02 * ease * Math.sin(7.2 * u + s * 1.7) + (s ? -0.005 : 0.005);
-        const c = q[index(s, i)];
-        const cx = c.x + normal.x * wave, cy = c.y + normal.y * wave, cz = c.z + normal.z * wave;
-        side.multiplyScalar(STRAP_W / 2);
-        const o = i * 9;
-        verts[o] = cx - side.x;
-        verts[o + 1] = cy - side.y;
-        verts[o + 2] = cz - side.z;
-        verts[o + 3] = cx - normal.x * 0.01;
-        verts[o + 4] = cy - normal.y * 0.01;
-        verts[o + 5] = cz - normal.z * 0.01;
-        verts[o + 6] = cx + side.x;
-        verts[o + 7] = cy + side.y;
-        verts[o + 8] = cz + side.z;
+      // The side direction is carried down the strap from the top (flat to
+      // the viewer), so it never flips where the strap bends.
+      side.set(1, 0, 0);
+      for (let j = 0; j < M; j++) {
+        tangent.subVectors(curve[Math.min(M - 1, j + 1)], curve[Math.max(0, j - 1)]).normalize();
+        side.addScaledVector(tangent, -side.dot(tangent)).normalize();
+        normal.crossVectors(tangent, side);
+        // The two straps lie one over the other where they meet the crimp.
+        const u = j / (M - 1);
+        const lift = (s ? -1 : 1) * 0.004 * u * u;
+        const cx = curve[j].x + normal.x * lift, cy = curve[j].y + normal.y * lift, cz = curve[j].z + normal.z * lift;
+        const w = STRAP_W / 2, h = STRAP_T / 2;
+        const o = j * 24;
+        const put = (k: number, sw: number, sh: number) => {
+          verts[o + k * 3] = cx + side.x * sw + normal.x * sh;
+          verts[o + k * 3 + 1] = cy + side.y * sw + normal.y * sh;
+          verts[o + k * 3 + 2] = cz + side.z * sw + normal.z * sh;
+        };
+        put(0, -w, h); put(1, w, h); // front
+        put(2, w, h); put(3, w, -h); // right edge
+        put(4, w, -h); put(5, -w, -h); // back
+        put(6, -w, -h); put(7, -w, h); // left edge
       }
       geo.attributes.position.needsUpdate = true;
       geo.computeVertexNormals();
     }
   };
 
-  // --- Render: scene to a multisampled target, blurred in time, then out --
-  const float = renderer.extensions.has("EXT_color_buffer_float") || renderer.extensions.has("EXT_color_buffer_half_float");
-  const type = float ? HalfFloatType : UnsignedByteType;
-  const sceneTarget = new WebGLRenderTarget(4, 4, { samples: 4, type });
-  const sumTarget = new WebGLRenderTarget(4, 4, { type, depthBuffer: false });
-  const addMaterial = new ShaderMaterial({
-    uniforms: { tMap: { value: null }, uWeight: { value: 1 } },
-    vertexShader: QUAD_VERTEX,
-    fragmentShader:
-      "uniform sampler2D tMap;\nuniform float uWeight;\nvarying vec2 vUv;\nvoid main() {\n  gl_FragColor = texture2D(tMap, vUv) * uWeight;\n}",
-    blending: CustomBlending,
-    blendEquation: AddEquation,
-    blendSrc: OneFactor,
-    blendDst: OneFactor,
-    depthTest: false,
-    depthWrite: false,
-    toneMapped: false,
-  });
-  // Out to the page: tone mapping and sRGB on straight colour, premultiplied again for the canvas.
-  const outMaterial = new ShaderMaterial({
-    uniforms: { tMap: { value: null } },
-    vertexShader: QUAD_VERTEX,
-    fragmentShader: `uniform sampler2D tMap;
-      varying vec2 vUv;
-      void main() {
-        vec4 c = texture2D(tMap, vUv);
-        gl_FragColor = vec4(c.a > 0.0 ? c.rgb / c.a : vec3(0.0), clamp(c.a, 0.0, 1.0));
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-        gl_FragColor.rgb *= gl_FragColor.a;
-      }`,
-    blending: NoBlending,
-    depthTest: false,
-    depthWrite: false,
-  });
-  const addQuad = new FullScreenQuad(addMaterial);
-  const outQuad = new FullScreenQuad(outMaterial);
-
-  let pixelsPerUnit = 100;
-  const setSize = (w: number, h: number, ratio: number) => {
-    renderer.setPixelRatio(ratio);
-    renderer.setSize(w, h, false);
-    const pw = Math.round(w * ratio), ph = Math.round(h * ratio);
-    sceneTarget.setSize(pw, ph);
-    sumTarget.setSize(pw, ph);
-    pixelsPerUnit = ph / STAGE;
-  };
-
-  /**
-   * Draws `samples` moments spread over the open shutter (`open`: the
-   * share of the last frame it covers) and averages them.
-   */
-  const draw = (samples: number, open = 0) => {
-    if (samples > 1) {
-      renderer.setRenderTarget(sumTarget);
-      renderer.clear();
-    }
-    for (let k = 0; k < samples; k++) {
-      applyPose(1 - (open * (samples - 1 - k)) / samples);
-      renderer.setRenderTarget(sceneTarget);
-      renderer.render(scene, camera);
-      if (samples > 1) {
-        addMaterial.uniforms.tMap.value = sceneTarget.texture;
-        addMaterial.uniforms.uWeight.value = 1 / samples;
-        renderer.setRenderTarget(sumTarget);
-        renderer.autoClear = false;
-        addQuad.render(renderer);
-        renderer.autoClear = true;
-      }
-    }
-    outMaterial.uniforms.tMap.value = (samples > 1 ? sumTarget : sceneTarget).texture;
-    renderer.setRenderTarget(null);
-    outQuad.render(renderer);
-  };
-
-  // --- Loop: runs only while something moves --------------------------
+  // --- Loop: runs only while something moves ------------------------------
   let active = true;
   let running = false;
   let acc = 0;
@@ -659,61 +571,39 @@ export async function createBadgeScene(
     for (let i = 0; i <= END; i++) if (inv[i]) e += p[i].distanceToSquared(prev[i]) * 1e4;
     return e;
   };
-  /** How far the badge moved on screen over the last frame, in pixels. */
-  const travel = () => {
-    const e = END * 3;
-    const moved = Math.hypot(to.pts[e] - from.pts[e], to.pts[e + 1] - from.pts[e + 1]);
-    const swung = Math.abs(to.roll - from.roll) * (HANG + PLATE_H / 2) + Math.abs(to.pitch - from.pitch) * HANG;
-    const turned = Math.abs(to.yaw - from.yaw) * (PLATE_W / 2);
-    return (moved + swung + turned) * pixelsPerUnit;
+  const draw = () => {
+    update();
+    renderer.render(scene, camera);
   };
   const tick = (_t: number, deltaMs: number) => {
-    const dt = Math.min(deltaMs / 1000, 1 / 20);
-    acc += dt;
-    [from, to] = [to, from];
+    acc += Math.min(deltaMs / 1000, 1 / 20);
     while (acc >= STEP) {
       stepPhysics(STEP);
       acc -= STEP;
     }
-    capture(to);
-    // One sample per ~2.5 px of travel while the shutter is open: sharp when
-    // slow, a soft trail when fast. The trail is capped (it is meant to be
-    // faint), which also keeps a slow frame from splitting it into ghosts.
-    let open = Math.min(1, SHUTTER / dt);
-    const px = travel() * open;
-    const samples = Math.max(1, Math.min(MAX_SAMPLES, Math.ceil(Math.min(px, MAX_BLUR) / 2.5)));
-    if (px > MAX_BLUR) open *= MAX_BLUR / px;
-    draw(samples, open);
+    draw();
     calm = energy() < 0.01 ? calm + 1 : 0;
-    if (dropT >= DROP && calm > 40) stop();
+    if (dropT >= DROP && calm > 30) halt();
   };
   const start = () => {
-    if (running || !active || lost) return;
+    if (running || !active || lost || dropT < 0) return;
     running = true;
     calm = 0;
     acc = 0;
     gsap.ticker.add(tick);
   };
-  const stop = () => {
+  const halt = () => {
     if (!running) return;
     running = false;
     gsap.ticker.remove(tick);
-    // Leave a sharp frame behind.
-    capture(to);
-    capture(from);
-    draw(1);
   };
 
-  const still = () => {
-    capture(to);
-    capture(from);
-    draw(1);
-  };
   const resize = () => {
     const w = host.clientWidth, h = host.clientHeight;
     if (!w || !h) return;
-    setSize(w, h, Math.min(window.devicePixelRatio, 2, Math.sqrt(PIXEL_BUDGET / (w * h))));
-    if (!running) still();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_RATIO, Math.sqrt(PIXEL_BUDGET / (w * h))));
+    renderer.setSize(w, h, false);
+    if (!running) draw();
   };
   const ro = new ResizeObserver(resize);
   ro.observe(host);
@@ -721,24 +611,17 @@ export async function createBadgeScene(
   canvas.addEventListener("webglcontextlost", (e) => {
     e.preventDefault();
     lost = true;
-    if (running) {
-      running = false;
-      gsap.ticker.remove(tick);
-    }
+    halt();
     // Our own dispose() drops the context on purpose: not a loss to report.
     if (!disposed) onLost();
   });
 
-  capture(to);
-  capture(from);
-  applyPose(1);
+  update();
   host.appendChild(canvas);
-  setSize(host.clientWidth || 300, host.clientHeight || 300, 1);
-  // Compile off the main thread where the browser can (for the target the scene is drawn to).
-  renderer.setRenderTarget(sceneTarget);
-  await renderer.compileAsync(scene, camera);
-  renderer.setRenderTarget(null);
   resize();
+  // Compile off the main thread where the browser can.
+  await renderer.compileAsync(scene, camera);
+  draw();
 
   return {
     canvas,
@@ -748,15 +631,12 @@ export async function createBadgeScene(
     },
     setTurn(progress) {
       turn = progress;
-      if (dropT >= 0) start();
+      start();
     },
     setActive(on) {
       active = on;
-      if (on && dropT >= 0) start();
-      else if (running) {
-        running = false;
-        gsap.ticker.remove(tick);
-      }
+      if (on) start();
+      else halt();
     },
     snapshot(size) {
       const was = turn;
@@ -771,8 +651,9 @@ export async function createBadgeScene(
       // Let the straps settle into how they really hang.
       for (let i = 0; i < 600; i++) stepPhysics(STEP);
       for (let i = 0; i <= END; i++) prev[i].copy(p[i]);
-      setSize(size, size, 1);
-      still();
+      renderer.setPixelRatio(1);
+      renderer.setSize(size, size, false);
+      draw();
       const url = canvas.toDataURL("image/png");
       turn = was;
       resize();
@@ -784,10 +665,7 @@ export async function createBadgeScene(
     },
     dispose() {
       disposed = true;
-      if (running) {
-        running = false;
-        gsap.ticker.remove(tick);
-      }
+      halt();
       ro.disconnect();
       scene.traverse((o) => {
         if (o instanceof Mesh) {
@@ -796,14 +674,7 @@ export async function createBadgeScene(
         }
       });
       textures.forEach((t) => t.dispose());
-      addQuad.dispose();
-      outQuad.dispose();
-      addMaterial.dispose();
-      outMaterial.dispose();
-      sceneTarget.dispose();
-      sumTarget.dispose();
       env.dispose();
-      pmrem.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       canvas.remove();

@@ -12,7 +12,7 @@ type Placeholder = { title: string; index: string; note: string };
 export type Dictionary = {
   meta: { title: string; description: string };
   nav: { home: string; work: string; about: string; contact: string; switchLanguage: string };
-  intro: { label: string; choose: string; chooseOther: string; enter: string };
+  intro: { label: string };
   hero: {
     kicker: string;
     tagline: string;
@@ -80,9 +80,6 @@ const pt: Dictionary = {
   },
   intro: {
     label: "Pedro Henrique | Portfólio",
-    choose: "Escolha seu idioma",
-    chooseOther: "Choose your language",
-    enter: "Entrar",
   },
   hero: {
     kicker: "Designer de Comunicação | Resende, RJ",
@@ -220,9 +217,6 @@ const en: Dictionary = {
   },
   intro: {
     label: "Pedro Henrique | Portfolio",
-    choose: "Choose your language",
-    chooseOther: "Escolha seu idioma",
-    enter: "Enter",
   },
   hero: {
     kicker: "Communication Designer | Resende, Brazil",

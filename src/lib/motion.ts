@@ -15,7 +15,7 @@ export function releaseIntro() {
 /** True while the intro curtain is still closed over the page. */
 export function introPending() {
   const state = document.documentElement.dataset.intro;
-  return !introReleased && (state === "play" || state === "resume");
+  return !introReleased && state === "play";
 }
 
 /** Runs `cb` once the intro has opened (or right away if there is no intro). */
