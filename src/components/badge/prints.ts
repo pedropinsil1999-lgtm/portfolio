@@ -11,7 +11,7 @@ export const PRINT_RADIUS = 34;
 const PRETO = "#042a41";
 const GRAFITE = "#004671";
 const BRANCO = "#eaffff";
-const VERMELHO = "#7298af";
+const VERMELHO = "#ff6331";
 
 /** Repeatable randomness, so the wear and grain are the same on every load. */
 function seeded(seed: number) {

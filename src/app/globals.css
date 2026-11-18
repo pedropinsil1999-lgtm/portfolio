@@ -7,7 +7,7 @@
   --preto: #042a41;
   --grafite: #004671; /* surfaces (cards, frames) so they lift off the base */
   --branco: #eaffff;
-  --vermelho: #7298af;
+  --vermelho: #ff6331; /* accent, only in details: the orange of the Instagram carousel */
   --azul-claro: #c2e8ff; /* hairlines and textures (strokes, grid, dots) */
   --azul-medio: #365c73;
   --ease-cine: cubic-bezier(0.76, 0, 0.24, 1);
@@ -42,7 +42,7 @@ body {
 
 ::selection {
   background: var(--vermelho);
-  color: var(--branco);
+  color: var(--preto);
 }
 
 /* Small labels, menu and captions: Inter in sentence case, never the
@@ -161,7 +161,7 @@ html[data-intro="play"] {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  background: rgb(114 152 175 / 0.6);
+  background: rgb(255 99 49 / 0.55);
   animation: now-pulse 2s ease-out infinite;
 }
 @keyframes now-pulse {
