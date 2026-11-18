@@ -92,8 +92,8 @@ export type BadgeScene = {
   setTurn(progress: number): void;
   /** Stops all work while the hero is off screen. */
   setActive(active: boolean): void;
-  /** A still of the badge at rest, as a PNG data URL (for phones). */
-  snapshot(size: number): string;
+  /** A still of the badge at rest (turned by `turn`), as a PNG data URL (for phones). */
+  snapshot(size: number, turn?: number): string;
   /** True once it has come to rest and stopped drawing. */
   idle(): boolean;
   /** Runs it ahead by some seconds without waiting for frames (tests). */
@@ -139,6 +139,11 @@ function acrylic(body: number, tint: Color, face: boolean, wear: Texture) {
         "#include <dithering_fragment>",
         `#include <dithering_fragment>
         vec3 refl = gl_FragColor.rgb;
+        // A flat face mirrors the same bit of the room across its whole
+        // area, so a softbox would wash the entire face white at once. On the
+        // faces the room's reflection is rolled off to a soft sheen; the
+        // bright, edged reflection comes from the band below instead.
+        refl = mix(refl, refl / (1.0 + refl * 7.0), uFace);
         float lit = clamp(max(max(refl.r, refl.g), refl.b), 0.0, 1.0);
         // A flat sheet mirrors one small patch of the room, so the window
         // light it would catch is drawn on the face: a diagonal band with a
@@ -148,7 +153,9 @@ function acrylic(body: number, tint: Color, face: boolean, wear: Texture) {
         float glint = uFace * (band * 0.11 + exp(-pow((d + 0.11) / 0.022, 2.0)) * 0.07);
         refl += glint;
         vec4 wear = texture2D(uWear, vLocal.xy / vec2(${PLATE_W.toFixed(2)}, ${PLATE_H.toFixed(2)}) + 0.5);
-        refl += uFace * (wear.r * (0.012 + lit * 1.1 + glint * 3.2) + wear.g * (0.006 + lit * 0.3 + glint * 0.9));
+        // Wear shows faintly everywhere and clearly only where the band of
+        // light crosses it, like on real plastic.
+        refl += uFace * (wear.r * (0.008 + lit * 0.35 + glint * 1.6) + wear.g * (0.004 + lit * 0.12 + glint * 0.5));
         float lum = clamp(max(max(refl.r, refl.g), refl.b), 0.0, 1.0);
         float a = clamp(lum + uBody, 0.0, 1.0);
         gl_FragColor = vec4(min((refl + uTint * uBody) / max(a, 1e-4), vec3(1.0)), a);`,
@@ -638,16 +645,16 @@ export async function createBadgeScene(
       if (on) start();
       else halt();
     },
-    snapshot(size) {
+    snapshot(size, at = 0) {
       const was = turn;
       dropT = DROP;
       anchor.x = anchor.y = 0;
-      turn = 0;
+      turn = at;
       hang();
       endVel.set(0, 0, 0);
       lastEndVel.set(0, 0, 0);
       roll = rollV = pitch = pitchV = yawV = 0;
-      yaw = REST_YAW;
+      yaw = REST_YAW + at * Math.PI;
       // Let the straps settle into how they really hang.
       for (let i = 0; i < 600; i++) stepPhysics(STEP);
       for (let i = 0; i <= END; i++) prev[i].copy(p[i]);

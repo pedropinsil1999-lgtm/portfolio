@@ -134,33 +134,37 @@ export default function HeroBadge() {
       });
       // It stays put on screen while the hero scrolls past, until the résumé
       // card has come up over it; then it is hidden behind the card.
+      // Measured live on every scroll (not once at load), so fonts, images or
+      // a phone's address bar changing the layout later can never shift it.
       const cover = document.querySelector<HTMLElement>("[data-cv-card]");
-      if (cover) {
-        gsap.to("[data-badge-fade]", {
-          // Exactly the scroll between the two triggers, so it holds still on screen.
-          y: () => cover.getBoundingClientRect().top - (hero?.getBoundingClientRect().top ?? 0),
-          ease: "none",
-          scrollTrigger: {
-            trigger: hero,
-            start: "top top",
-            endTrigger: cover,
-            end: "top top",
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        });
-        const hidden = (on: boolean) => {
-          gsap.set("[data-badge]", { visibility: on ? "hidden" : "inherit" });
-          scene.current?.setActive(!on);
+      const holder = root.current?.querySelector<HTMLElement>("[data-badge-fade]");
+      if (cover && hero && holder) {
+        let covered = false;
+        let held = -1;
+        const hold = () => {
+          const y = Math.max(0, -hero.getBoundingClientRect().top);
+          const now = cover.getBoundingClientRect().top <= 0;
+          if (y !== held) {
+            held = y;
+            holder.style.transform = `translate3d(0, ${y}px, 0)`;
+          }
+          if (now !== covered) {
+            covered = now;
+            holder.style.visibility = now ? "hidden" : "";
+            scene.current?.setActive(!now);
+          }
         };
-        ScrollTrigger.create({
-          trigger: cover,
-          start: "top top",
-          onEnter: () => hidden(true),
-          onLeaveBack: () => hidden(false),
-        });
+        hold();
+        ScrollTrigger.create({ start: 0, end: "max", onUpdate: hold, onRefresh: hold });
       }
-      return whenIntroDone(play);
+      const stopWaiting = whenIntroDone(play);
+      return () => {
+        stopWaiting();
+        if (holder) {
+          holder.style.transform = "";
+          holder.style.visibility = "";
+        }
+      };
     },
     { scope: root },
   );
@@ -172,8 +176,9 @@ export default function HeroBadge() {
       // A square stage hung from the top of the hero, three badges wide so the
       // swing never reaches its edges; the straps leave through its top. It
       // sits in front of the name, with its centre at 66% (phones) or 80% of
-      // the width.
-      className="pointer-events-none absolute right-[-38vw] top-0 z-20 aspect-square w-[144vw] md:right-[calc(20vw-clamp(15rem,30vw,30rem))] md:w-[clamp(30rem,60vw,60rem)]"
+      // the width; on wide, short screens it shrinks so the badge stays above
+      // the fold.
+      className="pointer-events-none absolute right-[-38vw] top-0 z-20 aspect-square w-[144vw] md:right-[calc(20vw-clamp(15rem,min(30vw,54svh),30rem))] md:w-[clamp(30rem,min(60vw,108svh),60rem)]"
     >
       <div data-badge-fade className="absolute inset-0 will-change-transform">
         <div data-badge className="absolute inset-0">

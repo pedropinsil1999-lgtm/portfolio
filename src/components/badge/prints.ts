@@ -250,11 +250,11 @@ export function drawWear() {
   }
   // Scratches: mostly along one direction, as from sliding in and out of a pocket.
   ctx.lineCap = "round";
-  for (let i = 0; i < 190; i++) {
+  for (let i = 0; i < 80; i++) {
     const x = rnd() * wear.width, y = rnd() * wear.height;
     const a = (rnd() < 0.7 ? 0.5 : rnd() * Math.PI) + (rnd() - 0.5) * 0.5;
-    const len = 18 + rnd() * rnd() * 260;
-    ctx.strokeStyle = `rgba(${Math.round(60 + rnd() * 195)}, 0, 0, 1)`;
+    const len = 12 + rnd() * rnd() * 150;
+    ctx.strokeStyle = `rgba(${Math.round(40 + rnd() * 140)}, 0, 0, 1)`;
     ctx.lineWidth = 0.6 + rnd() * 0.9;
     ctx.beginPath();
     ctx.moveTo(x, y);
@@ -267,8 +267,8 @@ export function drawWear() {
     ctx.stroke();
   }
   // Dust
-  for (let i = 0; i < 260; i++) {
-    ctx.fillStyle = `rgba(${Math.round(90 + rnd() * 165)}, 0, 0, 1)`;
+  for (let i = 0; i < 140; i++) {
+    ctx.fillStyle = `rgba(${Math.round(60 + rnd() * 120)}, 0, 0, 1)`;
     ctx.beginPath();
     ctx.arc(rnd() * wear.width, rnd() * wear.height, 0.6 + rnd() * 1.4, 0, Math.PI * 2);
     ctx.fill();
